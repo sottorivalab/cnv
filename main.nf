@@ -13,7 +13,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { CNV  } from './workflows/cnv'
+include { CNV                } from './workflows/cnv'
+include { PREPARE_GENOME          } from './subworkflows/local/prepare_genome'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_cnv_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_cnv_pipeline'
 include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_cnv_pipeline'
@@ -24,10 +25,13 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_cnv_
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// TODO nf-core: Remove this line if you don't need a FASTA file
 //   This is an example of how to use getGenomeAttribute() to fetch parameters
 //   from igenomes.config using `--genome`
-params.fasta = getGenomeAttribute('fasta')
+params.fasta     = getGenomeAttribute('fasta')
+params.gc_wiggle = getGenomeAttribute('gc_wiggle')
+
+// intiate channels (might to meta map later)
+fasta     = params.fasta      ? Channel.fromPath(params.fasta).map{ it -> [ [id:it.baseName], it ] }.collect() : Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,12 +48,27 @@ workflow SOTTORIVALAB_CNV {
     samplesheet // channel: samplesheet read in from --input
 
     main:
-
+    versions = Channel.empty()
     //
+    // SUBWORKFLOW: Prepare genome if needed
+    //
+
+	PREPARE_GENOME (
+        fasta
+    )
+    // gather files or get them from params
+    // Gather gc_wiggle file: either generate or use existing
+	gc_wiggle = params.create_gc_wiggle
+	    ? PREPARE_GENOME.out.gc_wiggle
+		: Channel.fromPath(params.gc_wiggle).map { it -> [ [id: it.baseName], it ] }.collect()
+
+	//
     // WORKFLOW: Run pipeline
     //
     CNV (
-        samplesheet
+        samplesheet,
+		fasta,
+		gc_wiggle
     )
     emit:
     multiqc_report = CNV.out.multiqc_report // channel: /path/to/multiqc_report.html
