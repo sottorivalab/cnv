@@ -11,6 +11,7 @@ process SEQUENZAUTILS_BAM2SEQZ {
     tuple val(meta), path(normalbam), path(tumourbam)
     tuple val(meta_2), path(fasta)
     tuple val(meta_3), path(wigfile)
+    each chromosome
 
     output:
     tuple val(meta), path("*.gz"), emit: seqz
@@ -20,8 +21,8 @@ process SEQUENZAUTILS_BAM2SEQZ {
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: "-C $chromosome"
+    def prefix = task.ext.prefix ?: "${meta.id}_${chromosome}"
     """
     sequenza-utils \\
         bam2seqz \\
@@ -30,6 +31,8 @@ process SEQUENZAUTILS_BAM2SEQZ {
         -t $tumourbam \\
         --fasta $fasta \\
         -gc $wigfile \\
+        --het ${params.het} \\
+        --hom ${params.hom} \\
         -o ${prefix}.gz
 
     cat <<-END_VERSIONS > versions.yml

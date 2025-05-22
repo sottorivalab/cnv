@@ -27,15 +27,23 @@ workflow CNV {
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+
+    // prepare chromosomes for bam2seqz this allows parallelization over chromosomes
+    chromosome_list = fasta_fai
+                    .splitCsv(sep: "\t")
+                    .map{ chr -> chr[0][0] }
+                    .filter( ~/^chr\d+|^chr[X,Y]|^\d+|[X,Y]/ )
+                    .collect()
     //
     // MODULE: BAM2SEQZ
     //
-
     SEQUENZAUTILS_BAM2SEQZ (
         ch_samplesheet,
         ch_fasta,
-        ch_wig
+        ch_wig,
+        chromosome_list
     )
+
     ch_versions = ch_versions.mix(SEQUENZAUTILS_BAM2SEQZ.out.versions.first())
 
     //

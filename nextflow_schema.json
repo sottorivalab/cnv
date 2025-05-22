@@ -44,6 +44,33 @@
                 }
             }
         },
+        "sequenza_options": {
+            "title": "sequenza options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "het": {
+                    "type": "number",
+                    "default": 0.25,
+                    "description": "Threshold to select heterozygous positions."
+                },
+                "hom": {
+                    "type": "number",
+                    "default": 0.9,
+                    "description": "Threshold to select homozygous positions."
+                },
+                "create_gc_wiggle": {
+                    "type": "boolean",
+                    "description": "Create gc_wiggle file for sequenza"
+                },
+                "gc_wiggle_location": {
+                    "type": "string",
+                    "default": "gc_wiggle_output",
+                    "description": "Path to save gc_wiggle output"
+                }
+            }
+        },
         "reference_genome_options": {
             "title": "Reference genome options",
             "type": "object",
@@ -243,6 +270,9 @@
             "$ref": "#/$defs/input_output_options"
         },
         {
+            "$ref": "#/$defs/sequenza_options"
+        },
+        {
             "$ref": "#/$defs/reference_genome_options"
         },
         {
@@ -251,14 +281,5 @@
         {
             "$ref": "#/$defs/generic_options"
         }
-    ],
-    "properties": {
-        "create_gc_wiggle": {
-            "type": "boolean"
-        },
-        "gc_wiggle_location": {
-            "type": "string",
-            "default": "gc_wiggle_output"
-        }
-    }
+    ]
 }
