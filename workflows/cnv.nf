@@ -20,10 +20,10 @@ workflow CNV {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
-	ch_fasta       // channel from reference folder
-	ch_wig         // channel from reference folder
+    ch_fasta       // channel from reference folder
+    ch_wig         // channel from reference folder
 
-	main:
+    main:
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
@@ -31,10 +31,10 @@ workflow CNV {
     // MODULE: BAM2SEQZ
     //
 
-	SEQUENZAUTILS_BAM2SEQZ (
+    SEQUENZAUTILS_BAM2SEQZ (
         ch_samplesheet,
-		ch_fasta,
-		ch_wig
+        ch_fasta,
+        ch_wig
     )
     ch_versions = ch_versions.mix(SEQUENZAUTILS_BAM2SEQZ.out.versions.first())
 
@@ -62,7 +62,7 @@ workflow CNV {
         Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
         Channel.empty()
 
-    summary_params    /  = paramsSummaryMap(
+    summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
     ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
     ch_multiqc_files = ch_multiqc_files.mix(
