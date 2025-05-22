@@ -1,0 +1,25 @@
+//
+// PREPARE GENOME
+//
+
+// Initialize channels based on params or indices that were just built
+// For all modules here:
+// A when clause condition is defined in the conf/modules.config to determine if the module should be run
+// Condition is based on params.step and params.tools
+// If and extra condition exists, it's specified in comments
+
+include { SEQUENZAUTILS_GCWIGGLE } from '../../../modules/nf-core/sequenzautils/gcwiggle'
+workflow PREPARE_GENOME {
+    take:
+    fasta                // channel: [mandatory] fasta
+
+    main:
+    versions = Channel.empty()
+	SEQUENZAUTILS_GCWIGGLE(fasta)
+    versions = versions.mix(SEQUENZAUTILS_GCWIGGLE.out.versions) // channel: versions.yml
+
+    emit:
+    gc_wiggle = SEQUENZAUTILS_GCWIGGLE.out.gc_wiggle // path: genome.fasta.fai
+
+    versions        // channel: [ versions.yml ]
+}
