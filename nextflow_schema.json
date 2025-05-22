@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/sottorivalab/cnv/master/nextflow_schema.json",
     "title": "sottorivalab/cnv pipeline parameters",
-    "description": "post sarek cnv analsis",
+    "description": "post sarek cnv analysis",
     "type": "object",
     "$defs": {
         "input_output_options": {
