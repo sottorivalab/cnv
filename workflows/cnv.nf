@@ -21,7 +21,8 @@ workflow CNV {
     take:
     ch_samplesheet // channel: samplesheet read in from --input
     ch_fasta       // channel from reference folder
-    ch_wig         // channel from reference folder
+    ch_fasta_fai   // channel from reference folder
+	ch_wig         // channel from reference folder
 
     main:
 
@@ -29,7 +30,7 @@ workflow CNV {
     ch_multiqc_files = Channel.empty()
 
     // prepare chromosomes for bam2seqz this allows parallelization over chromosomes
-    chromosome_list = fasta_fai
+    chromosome_list = ch_fasta_fai
                     .splitCsv(sep: "\t")
                     .map{ chr -> chr[0][0] }
                     .filter( ~/^chr\d+|^chr[X,Y]|^\d+|[X,Y]/ )

@@ -28,10 +28,16 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_cnv_
 //   This is an example of how to use getGenomeAttribute() to fetch parameters
 //   from igenomes.config using `--genome`
 params.fasta     = getGenomeAttribute('fasta')
+params.fasta_fai = getGenomeAttribute('fasta_fai')
 params.gc_wiggle = getGenomeAttribute('gc_wiggle')
+
+println( "params.fasta: " + params.fasta )
+println( "params.fasta_fai: " + params.fasta_fai )
+
 
 // intiate channels (might to meta map later)
 fasta     = params.fasta      ? Channel.fromPath(params.fasta).map{ it -> [ [id:it.baseName], it ] }.collect() : Channel.empty()
+fasta_fai = params.fasta_fai  ? Channel.fromPath(params.fasta_fai).collect() : Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,12 +68,18 @@ workflow SOTTORIVALAB_CNV {
 	    ? PREPARE_GENOME.out.gc_wiggle
 		: Channel.fromPath(params.gc_wiggle).map { it -> [ [id: it.baseName], it ] }.collect()
 
+	fasta_fai = params.fasta_fai  
+	    ? Channel.fromPath(params.fasta_fai).map{ it -> [ [id:'fai'], it ] }.collect()
+	    // TODO deal with this
+		: PREPARE_GENOME.out.fasta_fai
+
 	//
     // WORKFLOW: Run pipeline
     //
     CNV (
         samplesheet,
 		fasta,
+		fasta_fai,
 		gc_wiggle
     )
     emit:

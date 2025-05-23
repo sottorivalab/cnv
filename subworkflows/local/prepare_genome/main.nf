@@ -9,6 +9,8 @@
 // If and extra condition exists, it's specified in comments
 
 include { SEQUENZAUTILS_GCWIGGLE } from '../../../modules/nf-core/sequenzautils/gcwiggle'
+include { SAMTOOLS_FAIDX         } from '../../../modules/nf-core/samtools
+
 workflow PREPARE_GENOME {
     take:
     fasta                // channel: [mandatory] fasta
