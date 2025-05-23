@@ -4,11 +4,11 @@ process SEQUENZAUTILS_BAM2SEQZ {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/sequenza-utils:3.0.0--py38h6ed170a_2' :
-        'biocontainers/sequenza-utils:3.0.0--py38h6ed170a_2' }"
+        'https://depot.galaxyproject.org/singularity/sequenza-utils:3.0.0--py39h67e14b5_5' :
+        'biocontainers/sequenza-utils:3.0.0--py39h67e14b5_5' }"
 
     input:
-    tuple val(meta), path(normalbam), path(tumourbam)
+    tuple val(meta), path(normalbam), path(normalbai), path(tumourbam), path(tumourbai)
     tuple val(meta_2), path(fasta)
     tuple val(meta_3), path(wigfile)
     each chromosome

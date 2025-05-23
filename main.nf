@@ -54,12 +54,13 @@ workflow SOTTORIVALAB_CNV {
     //
     // SUBWORKFLOW: Prepare genome if needed
     //
-
+    samplesheet.view()
 	PREPARE_GENOME (
         fasta
     )
     // gather files or get them from params
     // Gather gc_wiggle file: either generate or use existing
+	// TODO create warning if niether gc_wiggle is available nor create_gc_wiggle is supplied
 	gc_wiggle = params.create_gc_wiggle
 	    ? PREPARE_GENOME.out.gc_wiggle
 		: Channel.fromPath(params.gc_wiggle).map { it -> [ [id: it.baseName], it ] }.collect()
