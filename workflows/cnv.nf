@@ -38,6 +38,10 @@ workflow CNV {
     //
     // MODULE: BAM2SEQZ
     //
+    chromosome_list.view{
+        println "Chromosome: $it"
+    }
+
     SEQUENZAUTILS_BAM2SEQZ (
         ch_samplesheet,
         ch_fasta,
