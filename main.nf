@@ -70,7 +70,6 @@ workflow SOTTORIVALAB_CNV {
 
 	fasta_fai = params.fasta_fai  
 	    ? Channel.fromPath(params.fasta_fai).map{ it -> [ [id:'fai'], it ] }.collect()
-	    // TODO deal with this
 		: PREPARE_GENOME.out.fasta_fai
 
 	//

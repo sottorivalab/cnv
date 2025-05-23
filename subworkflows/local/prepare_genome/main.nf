@@ -9,7 +9,7 @@
 // If and extra condition exists, it's specified in comments
 
 include { SEQUENZAUTILS_GCWIGGLE } from '../../../modules/nf-core/sequenzautils/gcwiggle'
-include { SAMTOOLS_FAIDX         } from '../../../modules/nf-core/samtools
+include { SAMTOOLS_FAIDX         } from '../../../modules/nf-core/samtools/faidx'
 
 workflow PREPARE_GENOME {
     take:
@@ -18,10 +18,14 @@ workflow PREPARE_GENOME {
     main:
     versions = Channel.empty()
 	SEQUENZAUTILS_GCWIGGLE(fasta)
-    versions = versions.mix(SEQUENZAUTILS_GCWIGGLE.out.versions) // channel: versions.yml
+	SAMTOOLS_FAIDX(fasta, [ [ id:'no_fai' ], [] ] )
+    
+	versions = versions.mix(SAMTOOLS_FAIDX.out.versions)
+	versions = versions.mix(SEQUENZAUTILS_GCWIGGLE.out.versions) // channel: versions.yml
 
     emit:
-    gc_wiggle = SEQUENZAUTILS_GCWIGGLE.out.gc_wiggle // path: genome.fasta.fai
+    gc_wiggle = SEQUENZAUTILS_GCWIGGLE.out.gc_wiggle.collect() // path: gcwiggle
+    fasta_fai = SAMTOOLS_FAIDX.out.fai.collect()               // path: genome.fasta.fai
 
     versions        // channel: [ versions.yml ]
 }
