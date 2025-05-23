@@ -10,7 +10,6 @@ process SAMTOOLS_FAIDX {
     input:
     tuple val(meta), path(fasta)
     tuple val(meta2), path(fai)
-    val get_sizes
 
     output:
     tuple val(meta), path ("*.{fa,fasta}") , emit: fa, optional: true
@@ -24,14 +23,12 @@ process SAMTOOLS_FAIDX {
 
     script:
     def args = task.ext.args ?: ''
-    def get_sizes_command = get_sizes ? "cut -f 1,2 ${fasta}.fai > ${fasta}.sizes" : ''
     """
     samtools \\
         faidx \\
         $fasta \\
         $args
 
-    ${get_sizes_command}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
