@@ -31,16 +31,11 @@ params.fasta     = getGenomeAttribute('fasta')
 params.fasta_fai = getGenomeAttribute('fasta_fai')
 params.gc_wiggle = getGenomeAttribute('gc_wiggle')
 
-// intiate channels (might to meta map later)
-fasta     = params.fasta      ? Channel.fromPath(params.fasta).map{ it -> [ [id:it.baseName], it ] }.collect() : Channel.empty()
-fasta_fai = params.fasta_fai  ? Channel.fromPath(params.fasta_fai).collect() : Channel.empty()
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-params.each { k,v -> println "[params] $k = $v" }
 
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
@@ -55,29 +50,38 @@ workflow SOTTORIVALAB_CNV {
     //
     // SUBWORKFLOW: Prepare genome if needed
     //
-	
-	PREPARE_GENOME (
-        fasta
-    )
     // gather files or get them from params
     // Gather gc_wiggle file: either generate or use existing
 	// TODO create warning if niether gc_wiggle is available nor create_gc_wiggle is supplied
-	gc_wiggle = params.create_gc_wiggle
+
+	fasta_ch = params.fasta ?
+        Channel.fromPath(params.fasta)
+            .map{ it -> [ [id:it.baseName], it ] }
+            .collect() :
+        Channel.empty()
+
+	PREPARE_GENOME (
+        fasta_ch
+    )
+
+    gc_wiggle_ch = params.create_gc_wiggle
 	    ? PREPARE_GENOME.out.gc_wiggle
 		: Channel.fromPath(params.gc_wiggle).map { it -> [ [id: it.baseName], it ] }.collect()
 
-	fasta_fai = params.fasta_fai
+    fasta_fai_ch = params.fasta_fai
 	    ? Channel.fromPath(params.fasta_fai).map{ it -> [ [id:'fai'], it ] }.collect()
 		: PREPARE_GENOME.out.fasta_fai
 
+    bin_size_ch = Channel.value(params.bin_size)
 	//
     // WORKFLOW: Run pipeline
     //
     CNV (
         samplesheet,
-		fasta,
-		fasta_fai,
-		gc_wiggle
+		fasta_ch,
+		fasta_fai_ch,
+		gc_wiggle_ch,
+        bin_size_ch
     )
     emit:
     multiqc_report = CNV.out.multiqc_report // channel: /path/to/multiqc_report.html

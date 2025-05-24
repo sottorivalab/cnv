@@ -10,6 +10,7 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_cnv_pipeline'
 include { SEQUENZAUTILS_BAM2SEQZ } from '../modules/nf-core/sequenzautils/bam2seqz/main'
 include { TABIX_TABIX            } from '../modules/nf-core/tabix/tabix/main'
+include { SEQUENZAUTILS_BIN      } from '../modules/local/sequenzautils/bin/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,12 +25,13 @@ workflow CNV {
     ch_fasta       // channel from reference folder
     ch_fasta_fai   // channel from reference folder
     ch_wig         // channel from reference folder
+    ch_bin_size    // default sequenza-utils bin size
 
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
-    
+
     // prepare chromosomes for bam2seqz this allows parallelization over chromosomes
     chromosome_list = ch_fasta_fai
                     .map{ it[1] }
@@ -55,10 +57,23 @@ workflow CNV {
                           .groupTuple()
                           .set{merge_seqz_input}
 
+	//
+    // MODULE: TABIX
+    //
     // merge and index bam2seqz output
-	TABIX_TABIX(merge_seqz_input)
-   
-    ch_version = ch_versions.mix(TABIX_TABIX.out.versions.first())
+    TABIX_TABIX(merge_seqz_input)
+
+    ch_versions = ch_versions.mix(TABIX_TABIX.out.versions.first())
+
+    //
+    // MODULE: BINNING
+    //
+    // binning of bam2seqz output default bin size is 50kb
+    SEQUENZAUTILS_BIN (
+        TABIX_TABIX.out.seqz,
+        ch_bin_size
+    )
+
 
 	//
     // Collate and save software versions
