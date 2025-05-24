@@ -40,6 +40,7 @@ fasta_fai = params.fasta_fai  ? Channel.fromPath(params.fasta_fai).collect() : C
     NAMED WORKFLOWS FOR PIPELINE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+params.each { k,v -> println "[params] $k = $v" }
 
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
@@ -54,7 +55,7 @@ workflow SOTTORIVALAB_CNV {
     //
     // SUBWORKFLOW: Prepare genome if needed
     //
-    samplesheet.view()
+	
 	PREPARE_GENOME (
         fasta
     )

@@ -42,7 +42,7 @@ process SEQUENZAUTILS_GCWIGGLE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        sequenzautils: \$(echo \$(sequenza-utils 2>&1) | sed 's/^.*is version //; s/ .*\$//')
+        sequenzautils: stub 
     END_VERSIONS
     """
 }

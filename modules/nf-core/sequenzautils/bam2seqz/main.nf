@@ -40,16 +40,18 @@ process SEQUENZAUTILS_BAM2SEQZ {
         sequenzautils: \$(echo \$(sequenza-utils 2>&1) | sed 's/^.*is version //; s/ .*\$//')
     END_VERSIONS
     """
-
+    
     stub:
-    def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: "-C $chromosome"
+    def prefix = task.ext.prefix ?: "${meta.id}_${chromosome}"
     """
-    echo | gzip > ${prefix}.gz
+    echo "This is a stub run. ext.when = ${task.ext.when}"
+        echo | gzip > ${prefix}.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        sequenzautils: \$(echo \$(sequenza-utils 2>&1) | sed 's/^.*is version //; s/ .*\$//')
+        sequenzautils: stub
     END_VERSIONS
     """
+
 }

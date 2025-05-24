@@ -9,6 +9,7 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_cnv_pipeline'
 include { SEQUENZAUTILS_BAM2SEQZ } from '../modules/nf-core/sequenzautils/bam2seqz/main'
+include { TABIX_TABIX            } from '../modules/nf-core/tabix/tabix/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -28,7 +29,6 @@ workflow CNV {
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
-    ch_fasta_fai.view()
     
     // prepare chromosomes for bam2seqz this allows parallelization over chromosomes
     chromosome_list = ch_fasta_fai
@@ -48,15 +48,19 @@ workflow CNV {
         chromosome_list
     )
 
-    ch_versions = ch_versions.mix(SEQUENZAUTILS_BAM2SEQZ.out.versions.first())
+    ch_versions = ch_versions.mix(SEQUENZAUTILS_BAM2SEQZ.out.versions)
 
-    // collect bam2seqz output for binning
+	// collect bam2seqz output for binning
     SEQUENZAUTILS_BAM2SEQZ.out.seqz
-                            .groupTuple()
-                            .set{merge_seqz_input}
+                          .groupTuple()
+                          .set{merge_seqz_input}
 
+    // merge and index bam2seqz output
+	TABIX_TABIX(merge_seqz_input)
+   
+    ch_version = ch_versions.mix(TABIX_TABIX.out.versions.first())
 
-    //
+	//
     // Collate and save software versions
     //
     softwareVersionsToYAML(ch_versions)
