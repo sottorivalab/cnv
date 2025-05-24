@@ -69,7 +69,8 @@ workflow CNV {
     // MODULE: BINNING
     //
     // binning of bam2seqz output default bin size is 50kb
-    SEQUENZAUTILS_BIN (
+    ch_bin_size.view{ "ch_bin_size $it" }
+	SEQUENZAUTILS_BIN (
         TABIX_TABIX.out.concat_seqz,
         ch_bin_size
     )

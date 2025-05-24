@@ -12,7 +12,7 @@ process SEQUENZAUTILS_BIN {
     val bin_size
 
     output:
-    tuple val(meta), path("*bin${params.bin}.seqz.gz"), emit: seqz_bin
+    tuple val(meta), path("*_bin${bin_size}.seqz.gz"), emit: seqz_bin
     path "versions.yml"          , emit: versions
 
     when:
@@ -38,7 +38,7 @@ process SEQUENZAUTILS_BIN {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     echo "This is a stub run. ext.when = ${task.ext.when}"
-    echo | gzip > ${prefix}.seqz.gz
+    echo | gzip > ${prefix}_bin${bin_size}.seqz.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

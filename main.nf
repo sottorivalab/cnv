@@ -52,37 +52,40 @@ workflow SOTTORIVALAB_CNV {
     //
     // gather files or get them from params
     // Gather gc_wiggle file: either generate or use existing
-	// TODO create warning if niether gc_wiggle is available nor create_gc_wiggle is supplied
+    // TODO create warning if niether gc_wiggle is available nor create_gc_wiggle is supplied
 
-	fasta_ch = params.fasta ?
+    fasta_ch = params.fasta ?
         Channel.fromPath(params.fasta)
             .map{ it -> [ [id:it.baseName], it ] }
             .collect() :
         Channel.empty()
 
-	PREPARE_GENOME (
+    PREPARE_GENOME (
         fasta_ch
     )
 
     gc_wiggle_ch = params.create_gc_wiggle
-	    ? PREPARE_GENOME.out.gc_wiggle
-		: Channel.fromPath(params.gc_wiggle).map { it -> [ [id: it.baseName], it ] }.collect()
+        ? PREPARE_GENOME.out.gc_wiggle
+        : Channel.fromPath(params.gc_wiggle).map { it -> [ [id: it.baseName], it ] }.collect()
 
     fasta_fai_ch = params.fasta_fai
-	    ? Channel.fromPath(params.fasta_fai).map{ it -> [ [id:'fai'], it ] }.collect()
-		: PREPARE_GENOME.out.fasta_fai
+        ? Channel.fromPath(params.fasta_fai).map{ it -> [ [id:'fai'], it ] }.collect()
+        : PREPARE_GENOME.out.fasta_fai
 
-    bin_size_ch = params.bin_size 
-	     ? Channel.value(params.bin_size)
-	     : println("bin_size channel main: " + bin_size_ch)
-	//
+    bin_size_ch = params.bin_size
+        ? Channel.value(params.bin_size)
+        : Channel.value(50).tap { println("WARNING: bin_size not set, using default 50") }
+
+    bin_size_ch.view { "bin_size_ch content: $it" }
+
+    //
     // WORKFLOW: Run pipeline
     //
     CNV (
         samplesheet,
-		fasta_ch,
-		fasta_fai_ch,
-		gc_wiggle_ch,
+        fasta_ch,
+        fasta_fai_ch,
+        gc_wiggle_ch,
         bin_size_ch
     )
     emit:
