@@ -70,7 +70,7 @@ workflow CNV {
     //
     // binning of bam2seqz output default bin size is 50kb
     SEQUENZAUTILS_BIN (
-        TABIX_TABIX.out.seqz,
+        TABIX_TABIX.out.concat_seqz,
         ch_bin_size
     )
 
