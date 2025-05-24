@@ -61,7 +61,7 @@ workflow CNV {
     // MODULE: TABIX
     //
     // merge and index bam2seqz output
-    TABIX_TABIX(merge_seqz_input)
+	TABIX_TABIX(merge_seqz_input)
 
     ch_versions = ch_versions.mix(TABIX_TABIX.out.versions.first())
 
@@ -69,7 +69,7 @@ workflow CNV {
     // MODULE: BINNING
     //
     // binning of bam2seqz output default bin size is 50kb
-    SEQUENZAUTILS_BIN (
+	SEQUENZAUTILS_BIN (
         TABIX_TABIX.out.concat_seqz,
         ch_bin_size
     )

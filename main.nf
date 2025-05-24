@@ -72,7 +72,9 @@ workflow SOTTORIVALAB_CNV {
 	    ? Channel.fromPath(params.fasta_fai).map{ it -> [ [id:'fai'], it ] }.collect()
 		: PREPARE_GENOME.out.fasta_fai
 
-    bin_size_ch = Channel.value(params.bin_size)
+    bin_size_ch = params.bin_size 
+	     ? Channel.value(params.bin_size)
+	     : println("bin_size channel main: " + bin_size_ch)
 	//
     // WORKFLOW: Run pipeline
     //
