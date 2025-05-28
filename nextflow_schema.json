@@ -285,5 +285,11 @@
         {
             "$ref": "#/$defs/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "bin_size": {
+            "type": "integer",
+            "default": 50
+        }
+    }
 }
