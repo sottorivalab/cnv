@@ -69,11 +69,19 @@ workflow CNV {
     // MODULE: BINNING
     //
     // binning of bam2seqz output default bin size is 50kb
-    ch_bin_size.view{ "ch_bin_size $it" }
 	SEQUENZAUTILS_BIN (
         TABIX_TABIX.out.concat_seqz,
         ch_bin_size
     )
+
+    ch_versions = ch_versions.mix(SEQUENZAUTILS_BIN.out.versions.first())
+
+    //
+    // run rseqz on the binned seqz files
+    //
+
+    // create a channel to run rseqz at various purity levels
+    ch_rseqz_purity_levels = Channel.from(params.rseqz_purity_levels ?: [0.1, 0.2, 0.7, 0.3, 0.5, 0.7, 0.9, 100])
 
 
 	//

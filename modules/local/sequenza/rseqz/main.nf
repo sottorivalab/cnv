@@ -8,10 +8,11 @@ process SEQUENZAUTILS_RSEQZ {
         'biocontainers/r-sequenza%3A3.0.0--r42h3342da4_5' }"
 
     input:
-    tuple val(meta), path(seqz_bin), val(tissue), val(purity)
+    tuple val(meta), path(seqz_bin)
     val  gender
     val  ploidy
     val  seq_gam
+    each val(purity)
 
     output:
     tuple val(meta), val(tissue), val(purity), path("${tissue}"), emit: rseqz

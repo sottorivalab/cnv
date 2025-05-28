@@ -68,6 +68,11 @@
                     "type": "string",
                     "default": "gc_wiggle_output",
                     "description": "Path to save gc_wiggle output"
+                },
+                "bin_size": {
+                    "type": "integer",
+                    "default": 50,
+                    "description": "Window size used for binning the original seqz file."
                 }
             }
         },
@@ -285,11 +290,5 @@
         {
             "$ref": "#/$defs/generic_options"
         }
-    ],
-    "properties": {
-        "bin_size": {
-            "type": "integer",
-            "default": 50
-        }
-    }
+    ]
 }

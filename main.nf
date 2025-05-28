@@ -76,8 +76,6 @@ workflow SOTTORIVALAB_CNV {
         ? Channel.value(params.bin_size)
         : Channel.value(50).tap { println("WARNING: bin_size not set, using default 50") }
 
-    bin_size_ch.view { "bin_size_ch content: $it" }
-
     //
     // WORKFLOW: Run pipeline
     //
