@@ -78,7 +78,7 @@ workflow SOTTORIVALAB_CNV {
 
     purity_ch = params.purity
         ? Channel.value(params.purity)
-        : Channel.value(1)
+        : Channel.value( [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 ] )
 
     ploidy_ch = params.purity
         ? Channel.value(params.ploidy)

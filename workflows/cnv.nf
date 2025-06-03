@@ -11,6 +11,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_cnv_
 include { SEQUENZAUTILS_BAM2SEQZ } from '../modules/nf-core/sequenzautils/bam2seqz/main'
 include { TABIX_TABIX            } from '../modules/nf-core/tabix/tabix/main'
 include { SEQUENZAUTILS_BIN      } from '../modules/local/sequenzautils/bin/main'
+include { SEQUENZAUTILS_RSEQZ    } from '../modules/local/sequenza/rseqz/main.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -83,14 +84,17 @@ workflow CNV {
     //
     // run rseqz on the binned seqz files
     //
-
-    // create a channel to run rseqz at various purity levels
-    ch_rseqz_purity = ch_purity 
-	                  ? ch_purity
-					  : Channel.from( 0.1, 0.2, 0.7, 0.3, 0.5, 0.7, 0.9, 100 )
-
-
-	//
+	
+    rseqz_input = SEQUENZAUTILS_BIN.out.seqz_bin
+    
+    ch_purity.view{"ch_purity: $it"}
+	/*
+	SEQUENZAUTILS_RSEQZ( rseqz_input,
+                         ch_sex,
+                         ch_ploidy,
+                         ch_gamma,
+						 ch_purity )
+    */
     // Collate and save software versions
     //
     softwareVersionsToYAML(ch_versions)
@@ -100,7 +104,6 @@ workflow CNV {
             sort: true,
             newLine: true
         ).set { ch_collated_versions }
-
 
     //
     // MODULE: MultiQC
