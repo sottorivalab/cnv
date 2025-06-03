@@ -26,6 +26,10 @@ workflow CNV {
     ch_fasta_fai   // channel from reference folder
     ch_wig         // channel from reference folder
     ch_bin_size    // default sequenza-utils bin size
+    ch_purity      // purity options for rseqz
+	ch_ploidy      // ploidy options for rseqz
+    ch_gamma       // gamma options for rseqz
+	ch_sex         // sex options for rseqz
 
     main:
 
@@ -81,7 +85,9 @@ workflow CNV {
     //
 
     // create a channel to run rseqz at various purity levels
-    ch_rseqz_purity_levels = Channel.from(params.rseqz_purity_levels ?: [0.1, 0.2, 0.7, 0.3, 0.5, 0.7, 0.9, 100])
+    ch_rseqz_purity = ch_purity 
+	                  ? ch_purity
+					  : Channel.from( 0.1, 0.2, 0.7, 0.3, 0.5, 0.7, 0.9, 100 )
 
 
 	//

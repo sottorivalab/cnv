@@ -52,7 +52,7 @@ workflow SOTTORIVALAB_CNV {
     //
     // gather files or get them from params
     // Gather gc_wiggle file: either generate or use existing
-    // TODO create warning if niether gc_wiggle is available nor create_gc_wiggle is supplied
+    // TODO create warning if neither gc_wiggle is available nor create_gc_wiggle is supplied
 
     fasta_ch = params.fasta ?
         Channel.fromPath(params.fasta)
@@ -74,9 +74,25 @@ workflow SOTTORIVALAB_CNV {
 
     bin_size_ch = params.bin_size
         ? Channel.value(params.bin_size)
-        : Channel.value(50).tap { println("WARNING: bin_size not set, using default 50") }
+        : Channel.value(50)
 
-    //
+    purity_ch = params.purity
+        ? Channel.value(params.purity)
+        : Channel.value(1)
+
+    ploidy_ch = params.purity
+        ? Channel.value(params.ploidy)
+        : Channel.value(7)
+
+    gamma_ch = params.gamma
+        ? Channel.value(params.gamma)
+        : Channel.value(40)
+
+    sex_ch = params.sex
+        ? Channel.value(params.sex)
+        : Channel.value("XX")
+	
+//
     // WORKFLOW: Run pipeline
     //
     CNV (
@@ -84,7 +100,11 @@ workflow SOTTORIVALAB_CNV {
         fasta_ch,
         fasta_fai_ch,
         gc_wiggle_ch,
-        bin_size_ch
+        bin_size_ch,
+        purity_ch,
+		ploidy_ch,
+		gamma_ch,
+		sex_ch
     )
     emit:
     multiqc_report = CNV.out.multiqc_report // channel: /path/to/multiqc_report.html
