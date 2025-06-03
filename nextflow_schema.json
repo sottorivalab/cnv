@@ -73,6 +73,25 @@
                     "type": "integer",
                     "default": 50,
                     "description": "Window size used for binning the original seqz file."
+                },
+                "ploidy": {
+                    "type": "integer",
+                    "default": 7,
+                    "description": "Use this parameter to constrain rsequenza ploidy"
+                },
+                "purity": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Use this parameter to constrain rsequenza purity"
+                },
+                "gamma": {
+                    "type": "integer",
+                    "default": 40,
+                    "description": "Use this parameter to adjust rsequenza gamma value"
+                },
+                "sex": {
+                    "type": "string",
+                    "default": "XX"
                 }
             }
         },
