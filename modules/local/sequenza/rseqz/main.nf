@@ -12,10 +12,10 @@ process SEQUENZAUTILS_RSEQZ {
     val  gender
     val  ploidy
     val  seq_gam
-    each val(purity)
+    each purity
 
     output:
-    tuple val(meta), val(tissue), val(purity), path("${tissue}"), emit: rseqz
+    tuple val(meta), path("${meta.id}_${purity}"), emit: rseqz
     path "versions.yml"          , emit: versions
 
     when:
@@ -24,7 +24,7 @@ process SEQUENZAUTILS_RSEQZ {
     script:
     def seqz_in = "${seqz_bin.toString().minus(".gz")}"
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${tissue}"
+    def prefix = task.ext.prefix ?: "${meta.id}_${purity}"
     """
     zcat ${seqz_bin} > $seqz_in
     analyse_cn_sequenza.R ${seqz_in} ${prefix} ${meta.id} ${gender} ${ploidy} ${purity} ${seq_gam}
@@ -37,10 +37,10 @@ process SEQUENZAUTILS_RSEQZ {
     stub:
     def seqz_in = "${seqz_bin.toString().minus(".gz")}"
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${tissue}"
+    def prefix = task.ext.prefix ?: "${meta.id}_${purity}"
     """
     echo "analyse_cn_sequenza.R ${seqz_in} ${prefix} ${meta.id} ${gender} ${ploidy} ${purity} ${seq_gam}"
-    mkdir ${tissue}
+    mkdir ${prefix}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         sequenzautils: 3.0.0

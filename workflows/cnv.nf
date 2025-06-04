@@ -87,14 +87,14 @@ workflow CNV {
 	
     rseqz_input = SEQUENZAUTILS_BIN.out.seqz_bin
     
-    ch_purity.view{"ch_purity: $it"}
-	/*
+    //ch_purity.view{"ch_purity: $it"}
+    //rseqz_input.view{"rseqz_input: $it"}
 	SEQUENZAUTILS_RSEQZ( rseqz_input,
                          ch_sex,
                          ch_ploidy,
                          ch_gamma,
 						 ch_purity )
-    */
+ 
     // Collate and save software versions
     //
     softwareVersionsToYAML(ch_versions)
