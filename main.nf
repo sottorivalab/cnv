@@ -78,7 +78,7 @@ workflow SOTTORIVALAB_CNV {
 
     purity_ch = params.purity
         ? Channel.value(params.purity)
-        : Channel.value( [ 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 ] )
+        : Channel.value( [  20, 40, 60, 80 ] )
 
     ploidy_ch = params.purity
         ? Channel.value(params.ploidy)
@@ -91,7 +91,7 @@ workflow SOTTORIVALAB_CNV {
     sex_ch = params.sex
         ? Channel.value(params.sex)
         : Channel.value("XX")
-	
+
 //
     // WORKFLOW: Run pipeline
     //
