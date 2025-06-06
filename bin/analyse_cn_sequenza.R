@@ -3,8 +3,8 @@
 if (!require(sequenza)) stop("Package 'sequenza' missing\n.")
 
 args <- commandArgs(TRUE)
-filtered_input <- args[1]
-full_input <- args[2]
+full_input <- args[1]
+filtered_input <- args[2]
 output_dir <- args[3]
 output_prefix <- args[4]
 gender <- args[5]

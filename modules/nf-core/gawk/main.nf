@@ -11,7 +11,7 @@ process GAWK {
     tuple val(meta), path(input)
 
     output:
-    tuple val(meta), path("*filtered.gz"), emit: filtered_seqz
+    tuple val(meta), path("*filtered.seqz.gz"), emit: filtered_seqz
     path "versions.yml"                  , emit: versions
 
     when:
