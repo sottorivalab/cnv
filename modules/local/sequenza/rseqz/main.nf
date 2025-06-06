@@ -3,15 +3,13 @@ process SEQUENZAUTILS_RSEQZ {
     label 'process_medium'
 
     conda (params.enable_conda ? "bioconda::r-sequenza=3.0.0" : null)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/r-sequenza%3A3.0.0--r42h3342da4_5' :
-        'biocontainers/r-sequenza%3A3.0.0--r42h3342da4_5' }"
+    container 'sottorivalab_sequenza.sif'
 
     input:
     tuple val(meta), path(seqz_bin)
     val  gender
     val  ploidy
-    val  seq_gam
+    val  gamma
     each purity
 
     output:
@@ -22,24 +20,22 @@ process SEQUENZAUTILS_RSEQZ {
     task.ext.when == null || task.ext.when
 
     script:
-    def seqz_in = "${seqz_bin.toString().minus(".gz")}"
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}_${purity}"
     """
-    zcat ${seqz_bin} > $seqz_in
-    analyse_cn_sequenza.R ${seqz_in} ${prefix} ${meta.id} ${gender} ${ploidy} ${purity} ${seq_gam}
+    analyse_cn_sequenza.R ${seqz_bin} ${prefix} ${meta.id} ${gender} ${ploidy} ${purity} ${gamma}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         sequenzautils: \$(echo \$(sequenza-utils 2>&1) | sed 's/^.*is version //; s/ .*\$//')
     END_VERSIONS
     """
-    stub:
-    def seqz_in = "${seqz_bin.toString().minus(".gz")}"
+
+	stub:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}_${purity}"
     """
-    echo "analyse_cn_sequenza.R ${seqz_in} ${prefix} ${meta.id} ${gender} ${ploidy} ${purity} ${seq_gam}"
+    echo "analyse_cn_sequenza.R ${seqz_bin} ${prefix} ${meta.id} ${gender} ${ploidy} ${purity} ${gamma}"
     mkdir ${prefix}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -21,13 +21,13 @@ process TABIX_TABIX {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     head -n 1  <( zcat ${seqz[0]} ) > header
-	cat header <( zcat $seqz | awk '{if (NR!=1 && \$1 != "chromosome") {print \$0}}' ) | bgzip > \
+    cat header <( zcat $seqz | awk '{if (NR!=1 && \$1 != "chromosome") {print \$0}}' ) | bgzip > \
     ${prefix}_concat.seqz.gz
     tabix -f -s 1 -b 2 -e 2 -S 1 ${prefix}_concat.seqz.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        tabix: \$(echo \$(tabix -h 2>&1) | sed 's/^.*Version: //; s/ .*\$//')
+        tabix: \$(tabix -h 2>&1 | sed -n 's/^Version: //p')
     END_VERSIONS
     """
 

@@ -3,14 +3,20 @@
 if (!require(sequenza)) stop("Package 'sequenza' missing\n.")
 
 args <- commandArgs(TRUE)
-print(args)
 input <- args[1]
 output_dir <- args[2]
 output_prefix <- args[3]
-gender <- args[4]
+sex <- args[4]
 ploidy <- as.integer(args[5])
 ccf_val <- as.numeric(args[6])
 gam <- as.integer(args[7])
+
+print(paste("output dir:", output_dir))
+print(paste("output_prefix:", output_prefix))
+print(paste("sex:", sex))
+print(paste("ploidy:", ploidy))
+print(paste("ccf:", ccf_val))
+print(paste("gamma:", gam))
 
 if (ploidy == 7) {
   low_p <- 1
@@ -20,12 +26,12 @@ if (ploidy == 7) {
   up_p <- ploidy + 1
 }
 
-if (ccf == 100) {
+if (ccf_val == 100) {
   high_ccf <- 1.0
   low_ccf <- 0.1
 } else {
-  high_ccf <- ccf/100 + 0.1
-  low_ccf <- ccf/100 - 0.1
+  high_ccf <- ccf_val/100 + 0.1
+  low_ccf <- ccf_val/100 - 0.1
 }
 params_list <- list("input" = input, "output_prefix" = output_prefix)
 # Function:
@@ -56,7 +62,7 @@ sequenzaAnalysis <- function(input,
     #  Define chromosomes to analyse (note these will subset to those that
     # are available for sequenza:
     chr_list <- c(1:22, "X")
-    if (gender != "XX") {
+    if (sex != "XX") {
         chr_list <- c(chr_list, "Y")
     }
 

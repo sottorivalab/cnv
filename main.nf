@@ -29,7 +29,7 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_cnv_
 //   from igenomes.config using `--genome`
 params.fasta     = getGenomeAttribute('fasta')
 params.fasta_fai = getGenomeAttribute('fasta_fai')
-params.gc_wiggle = getGenomeAttribute('gc_wiggle')
+params.gc_wiggle = getGenomeAttribute('wiggle')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,7 +63,7 @@ workflow SOTTORIVALAB_CNV {
     PREPARE_GENOME (
         fasta_ch
     )
-
+    println(params.gc_wiggle)
     gc_wiggle_ch = params.create_gc_wiggle
         ? PREPARE_GENOME.out.gc_wiggle
         : Channel.fromPath(params.gc_wiggle).map { it -> [ [id: it.baseName], it ] }.collect()
