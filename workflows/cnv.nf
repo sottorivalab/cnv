@@ -8,10 +8,11 @@ include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_cnv_pipeline'
-include { SEQUENZAUTILS_BAM2SEQZ } from '../modules/nf-core/sequenzautils/bam2seqz/main'
-include { TABIX_TABIX            } from '../modules/nf-core/tabix/tabix/main'
-include { SEQUENZAUTILS_BIN      } from '../modules/local/sequenzautils/bin/main'
-include { SEQUENZAUTILS_RSEQZ    } from '../modules/local/sequenza/rseqz/main.nf'
+include { SEQUENZAUTILS_BAM2SEQZ } from '../modules/nf-core/sequenzautils/bam2seqz/'
+include { TABIX_TABIX            } from '../modules/nf-core/tabix/tabix/'
+include { SEQUENZAUTILS_BIN      } from '../modules/local/sequenzautils/bin/'
+include { SEQUENZAUTILS_RSEQZ    } from '../modules/local/sequenza/rseqz/'
+include { GAWK                   } from '../modules/nf-core/gawk/'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,19 +83,22 @@ workflow CNV {
     ch_versions = ch_versions.mix(SEQUENZAUTILS_BIN.out.versions.first())
 
     //
-    // run rseqz on the binned seqz files
+    // filter the seqz for fast seqz processing
     //
-	
-    rseqz_input = SEQUENZAUTILS_BIN.out.seqz_bin
-    
-    //ch_purity.view{"ch_purity: $it"}
-    //rseqz_input.view{"rseqz_input: $it"}
+
+    GAWK (SEQUENZAUTILS_BIN.out.seqz_bin)
+
+    ch_versions = ch_versions.mix(GAWK.out.versions.first())
+
+    rseqz_input = GAWK.out.filtered_seqz.join(SEQUENZAUTILS_BIN.out.seqz_bin)
+
+    rseqz_input.view{"rseqz_input: $it"}
 	SEQUENZAUTILS_RSEQZ( rseqz_input,
                          ch_sex,
                          ch_ploidy,
                          ch_gamma,
 						 ch_purity )
- 
+
     // Collate and save software versions
     //
     softwareVersionsToYAML(ch_versions)

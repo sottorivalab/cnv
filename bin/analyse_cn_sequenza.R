@@ -1,45 +1,69 @@
 #!/usr/bin/env Rscript
-# Load libs:
+
 if (!require(sequenza)) stop("Package 'sequenza' missing\n.")
 
 args <- commandArgs(TRUE)
-input <- args[1]
-output_dir <- args[2]
-output_prefix <- args[3]
-sex <- args[4]
-ploidy <- as.integer(args[5])
-ccf_val <- as.numeric(args[6])
-gam <- as.integer(args[7])
+filtered_input <- args[1]
+full_input <- args[2]
+output_dir <- args[3]
+output_prefix <- args[4]
+gender <- args[5]
+ploidy <- as.integer(args[6])
+ccf <- as.numeric(args[7])
+gam <- as.integer(args[8])
 
+print(paste("filtered input:", filtered_input))
+print(paste("full input:", full_input))
 print(paste("output dir:", output_dir))
 print(paste("output_prefix:", output_prefix))
-print(paste("sex:", sex))
+print(paste("gender:", gender))
 print(paste("ploidy:", ploidy))
-print(paste("ccf:", ccf_val))
+print(paste("ccf:", ccf))
 print(paste("gamma:", gam))
 
+# Compute ploidy range
 if (ploidy == 7) {
   low_p <- 1
   up_p <- 7
-} else  {
+} else {
   low_p <- ploidy - 1
   up_p <- ploidy + 1
 }
 
-if (ccf_val == 100) {
+# Compute CCF range
+if (ccf == 100) {
   high_ccf <- 1.0
   low_ccf <- 0.1
 } else {
-  high_ccf <- ccf_val/100 + 0.1
-  low_ccf <- ccf_val/100 - 0.1
+  high_ccf <- ccf / 100 + 0.1
+  low_ccf <- ccf / 100 - 0.1
 }
-params_list <- list("input" = input, "output_prefix" = output_prefix)
-# Function:
-sequenzaAnalysis <- function(input,
+
+params_list <- list(
+  filtered_input = filtered_input,
+  full_input = full_input,
+  output_prefix = output_prefix,
+  output_dir = output_dir,
+  gender = gender,
+  gamma = gam,
+  low_p = low_p,
+  up_p = up_p,
+  low_ccf = low_ccf,
+  high_ccf = high_ccf
+)
+
+sequenzaAnalysis <- function(filtered_input,
+                             full_input,
                              output_prefix,
+                             output_dir,
+                             gender,
+                             gamma,
+                             low_p,
+                             up_p,
+                             low_ccf,
+                             high_ccf,
                              window = 1e5,
                              overlap = 1,
-                             gamma = gam,
                              kmin = 300,
                              min_reads = 40,
                              min_reads_normal = 10,
@@ -53,28 +77,20 @@ sequenzaAnalysis <- function(input,
                              segment_filter = 3e6,
                              ratio_priority = FALSE,
                              method = "baf",
-                             low_cell = low_ccf,
-                             up_cell = high_ccf,
-                             low_ploidy = low_p,
-                             up_ploidy = up_p,
                              CNt_max = 20) {
 
-    #  Define chromosomes to analyse (note these will subset to those that
-    # are available for sequenza:
     chr_list <- c(1:22, "X")
-    if (sex != "XX") {
+    if (gender != "XX") {
         chr_list <- c(chr_list, "Y")
     }
-
     chr_list <- c(chr_list, paste0("chr", chr_list))
 
-    # Extract sequenza data for model:
-    cat(sprintf("- Starting analysis for %s\n", input))
+    cat(sprintf("- Starting analysis for %s\n", filtered_input))
     cat("- Calculating gc-stats\n")
-    gc_stats <- gc.sample.stats(input)
+    gc_stats <- gc.sample.stats(full_input)
 
     cat("- Loading data\n")
-    modDat <- sequenza.extract(input,
+    modDat <- sequenza.extract(filtered_input,
         window = window,
         overlap = overlap,
         gamma = gamma,
@@ -88,11 +104,9 @@ sequenzaAnalysis <- function(input,
         assembly = assembly,
         weighted.mean = weighted_mean,
         normalization.method = normalization_method,
-        parallel = 8,
         gc.stats = gc_stats
     )
 
-    # Fit the model:
     cat("- Fitting the model\n")
     cells <- seq(low_ccf, high_ccf, 0.01)
     plo <- seq(low_p, up_p, 0.1)
@@ -106,7 +120,6 @@ sequenzaAnalysis <- function(input,
         method = method
     )
 
-    # Export the data:
     cat("- Exporting results\n")
     sequenza.results(modDat,
         fit,
@@ -120,4 +133,3 @@ sequenzaAnalysis <- function(input,
 }
 
 do.call(sequenzaAnalysis, params_list)
-
