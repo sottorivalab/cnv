@@ -3,17 +3,15 @@
 if (!require(sequenza)) stop("Package 'sequenza' missing\n.")
 
 args <- commandArgs(TRUE)
-full_input <- args[1]
-filtered_input <- args[2]
-output_dir <- args[3]
-output_prefix <- args[4]
-gender <- args[5]
-ploidy <- as.integer(args[6])
-ccf <- as.numeric(args[7])
-gam <- as.integer(args[8])
+input <- args[1]
+output_dir <- args[2]
+output_prefix <- args[3]
+gender <- args[4]
+ploidy <- as.integer(args[5])
+ccf <- as.numeric(args[6])
+gam <- as.integer(args[7])
 
-print(paste("filtered input:", filtered_input))
-print(paste("full input:", full_input))
+print(paste("full input:", input))
 print(paste("output dir:", output_dir))
 print(paste("output_prefix:", output_prefix))
 print(paste("gender:", gender))
@@ -40,8 +38,7 @@ if (ccf == 100) {
 }
 
 params_list <- list(
-  filtered_input = filtered_input,
-  full_input = full_input,
+  input = input,
   output_prefix = output_prefix,
   output_dir = output_dir,
   gender = gender,
@@ -52,8 +49,7 @@ params_list <- list(
   high_ccf = high_ccf
 )
 
-sequenzaAnalysis <- function(filtered_input,
-                             full_input,
+sequenzaAnalysis <- function(input,
                              output_prefix,
                              output_dir,
                              gender,
@@ -79,18 +75,12 @@ sequenzaAnalysis <- function(filtered_input,
                              method = "baf",
                              CNt_max = 20) {
 
-    chr_list <- c(1:22, "X")
-    if (gender != "XX") {
-        chr_list <- c(chr_list, "Y")
-    }
-    chr_list <- c(chr_list, paste0("chr", chr_list))
-
-    cat(sprintf("- Starting analysis for %s\n", filtered_input))
+    cat(sprintf("- Starting analysis for %s\n", input))
     cat("- Calculating gc-stats\n")
-    gc_stats <- gc.sample.stats(full_input)
-
+    gc_stats <- gc.sample.stats(input)
+    chr_list <- gc_stats$file.metrics$chr
     cat("- Loading data\n")
-    modDat <- sequenza.extract(filtered_input,
+    modDat <- sequenza.extract(input,
         window = window,
         overlap = overlap,
         gamma = gamma,

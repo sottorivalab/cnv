@@ -22,12 +22,8 @@ process GAWK {
     """
     zcat ${input} | \
     awk 'BEGIN {OFS="\t"} 
-    NR == 1 {
-        print "chromosome", "position", "depth.normal", "depth.tumor", "depth.ratio", "Af", "GC.percent"; next
-    }
-    (\$1 ~ /^chr([0-9]+|X|Y)\$/ && \$4 >= 10 && \$5 >= 10 && \$7 > 0.1 && \$7 < 0.9) {
-       print \$1, \$2, \$4, \$5, \$6, \$7, \$10
-    }' | gzip > ${prefix}_filtered.seqz.gz
+    NR == 1 || (\$4 >= 10 && \$5 >= 10 && \$7 > 0.1 && \$7 < 0.9)' \
+    | gzip > ${prefix}_filtered.seqz.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

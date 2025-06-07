@@ -1,12 +1,11 @@
 process SEQUENZAUTILS_RSEQZ {
     tag "${meta.id}"
-    label 'process_medium'
-
-    conda (params.enable_conda ? "bioconda::r-sequenza=3.0.0" : null)
+    
+	conda (params.enable_conda ? "bioconda::r-sequenza=3.0.0" : null)
     container 'sottorivalab_sequenza.sif'
 
     input:
-    tuple val(meta), path(full_seqz_bin), path(filtered_seqz_bin)
+    tuple val(meta), path(full_seqz_bin)// , path(filtered_seqz_bin)
     val  gender
     val  ploidy
     val  gamma
@@ -23,7 +22,7 @@ process SEQUENZAUTILS_RSEQZ {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}_${purity}"
     """
-    analyse_cn_sequenza.R ${full_seqz_bin} ${filtered_seqz_bin}, ${prefix} ${meta.id} ${gender} ${ploidy} ${purity} ${gamma}
+    analyse_cn_sequenza.R ${full_seqz_bin} ${prefix} ${meta.id} ${gender} ${ploidy} ${purity} ${gamma}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
