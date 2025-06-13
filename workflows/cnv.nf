@@ -52,6 +52,7 @@ workflow CNV {
     SEQUENZAUTILS_BAM2SEQZ (
         ch_samplesheet,
         ch_fasta,
+        ch_fasta_fai,
         ch_wig,
         chromosome_list
     )

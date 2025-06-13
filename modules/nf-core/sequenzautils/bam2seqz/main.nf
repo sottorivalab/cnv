@@ -9,7 +9,8 @@ process SEQUENZAUTILS_BAM2SEQZ {
     input:
     tuple val(meta), path(normalbam), path(normalbai), path(tumourbam), path(tumourbai)
     tuple val(meta_2), path(fasta)
-    tuple val(meta_3), path(wigfile)
+    tuple val(meta_3), path(fasta_fai)
+    tuple val(meta_4), path(wigfile)
     each chromosome
 
     output:
@@ -23,6 +24,12 @@ process SEQUENZAUTILS_BAM2SEQZ {
     def args = task.ext.args ?: "-C $chromosome"
     def prefix = task.ext.prefix ?: "${meta.id}_${chromosome}"
     """
+    # Create a named pipe for stderr
+    mkfifo stderr.pipe
+
+    # Start live monitor in background — looks for failure pattern and kills main process if matched
+    ( tail -F stderr.pipe | grep -m 1 '\\[E::faidx_adjust_position\\] The sequence "chr.*" was not found' && echo "Sequence not found — aborting early" >&2 && kill 0 ) &
+    
     sequenza-utils \\
         bam2seqz \\
         $args \\
@@ -33,6 +40,9 @@ process SEQUENZAUTILS_BAM2SEQZ {
         --het ${params.het} \\
         --hom ${params.hom} \\
         -o ${prefix}.gz
+    
+    # If command exits normally, we’re good — kill background tail (if still running)
+    pkill -P $$ tail || true
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
