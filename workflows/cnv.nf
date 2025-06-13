@@ -82,17 +82,8 @@ workflow CNV {
 
     ch_versions = ch_versions.mix(SEQUENZAUTILS_BIN.out.versions.first())
 
-    //
-    // filter the seqz for fast seqz processing
-    //
-
-    // GAWK (SEQUENZAUTILS_BIN.out.seqz_bin)
-
-    // ch_versions = ch_versions.mix(GAWK.out.versions.first())
-
     rseqz_input = SEQUENZAUTILS_BIN.out.seqz_bin
 
-    rseqz_input.view{"rseqz_input: $it"}
 	SEQUENZAUTILS_RSEQZ( rseqz_input,
                          ch_sex,
                          ch_ploidy,

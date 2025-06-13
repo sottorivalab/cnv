@@ -12,7 +12,7 @@ process SEQUENZAUTILS_BIN {
     val bin_size
 
     output:
-    tuple val(meta), path("*_bin${bin_size}.seqz.gz"), emit: seqz_bin
+    tuple val(meta), path("*_bin${bin_size}.seqz"), emit: seqz_bin
     path "versions.yml"          , emit: versions
 
     when:
@@ -25,8 +25,7 @@ process SEQUENZAUTILS_BIN {
         seqz_binning \\
         -w $bin_size \\
         --seqz $concat_seqz \\
-        -o - |\\
-        gzip > ${prefix}_bin${bin_size}.seqz.gz
+        -o ${prefix}_bin${bin_size}.seqz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -1,5 +1,6 @@
 #!/usr/bin/env Rscript
 
+#Sys.setenv("VROOM_CONNECTION_SIZE" = "550000000072")
 if (!require(sequenza)) stop("Package 'sequenza' missing\n.")
 
 args <- commandArgs(TRUE)
@@ -11,7 +12,7 @@ ploidy <- as.integer(args[5])
 ccf <- as.numeric(args[6])
 gam <- as.integer(args[7])
 
-print(paste("full input:", input))
+print(paste("input:", input))
 print(paste("output dir:", output_dir))
 print(paste("output_prefix:", output_prefix))
 print(paste("gender:", gender))
@@ -73,6 +74,7 @@ sequenzaAnalysis <- function(input,
                              segment_filter = 3e6,
                              ratio_priority = FALSE,
                              method = "baf",
+							 parallel = 8,
                              CNt_max = 20) {
 
     cat(sprintf("- Starting analysis for %s\n", input))
