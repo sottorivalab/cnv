@@ -39,17 +39,18 @@ process SEQUENZAUTILS_BAM2SEQZ {
         -gc $wigfile \\
         --het ${params.het} \\
         --hom ${params.hom} \\
-        -o ${prefix}.gz
-    
+        -o ${prefix}.gz \\
+        2> >(tee stderr.pipe >&2)
+
     # If command exits normally, we’re good — kill background tail (if still running)
-    pkill -P $$ tail || true
+    pkill -P \$\$ tail || true
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         sequenzautils: \$(echo \$(sequenza-utils 2>&1) | sed 's/^.*is version //; s/ .*\$//')
     END_VERSIONS
     """
-    
+
     stub:
     def args = task.ext.args ?: "-C $chromosome"
     def prefix = task.ext.prefix ?: "${meta.id}_${chromosome}"
