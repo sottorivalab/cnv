@@ -49,6 +49,7 @@ workflow CNV {
                     .filter( ~/^chr\d+|^chr[X,Y]|^\d+|[X,Y]/ )
                     .collect()
 
+
     //
     // MODULE: BAM2SEQZ
     //
@@ -65,13 +66,25 @@ workflow CNV {
 
 	// collect bam2seqz output for binning
     SEQUENZAUTILS_BAM2SEQZ.out.seqz
-                          .groupTuple()
-                          .set{merge_seqz_input}
+         .groupTuple()
+         .map { meta, files ->
+             // Sort files by chromosome natural order
+             def chr_order = [*(1..22), 'X', 'Y']
+             def chr_index = { file ->
+                 def chr = file.getName() =~ /chr(\d+|X|Y)/
+                 return chr ? chr_order.indexOf(chr[0][1].toString()) : 999
+             }
+             def sorted = files.sort { a, b -> chr_index(a) <=> chr_index(b) }
+             tuple(meta, sorted)
+         }
+         .set { merge_seqz_input }
 
 	//
     // MODULE: TABIX
     //
     // merge and index bam2seqz output
+
+    merge_seqz_input.view{ "merge_seqz_input: ${it}" }
 
     TABIX_TABIX(merge_seqz_input)
 
