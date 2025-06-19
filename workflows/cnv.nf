@@ -34,11 +34,8 @@ workflow CNV {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    //ch_samplesheet.view{"Samplesheet: $it"}
-
     // Branching logic based on presence of seqz
     ch_samplesheet
-        //.view{"Samplesheet: $it"}
         .branch {
             seqz:  it.size() == 2 && it[1].toString().endsWith(".seqz")
             bam:   it.size() == 5
@@ -52,12 +49,9 @@ workflow CNV {
                     .filter( ~/^chr\d+|^chr[X,Y]|^\d+|[X,Y]/ )
                     .collect()
 
-    chromosome_list.view{"Chromosome list: $it"}
-    ch_fasta.view{"Fasta input: $it"}
     //
     // MODULE: BAM2SEQZ
     //
-    //ch_input.bam.view{"BAM input: $it"}
 
     SEQUENZAUTILS_BAM2SEQZ (
         ch_input.bam,
