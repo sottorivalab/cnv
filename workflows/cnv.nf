@@ -37,7 +37,7 @@ workflow CNV {
     // Branching logic based on presence of seqz
     ch_samplesheet
         .branch {
-            seqz:  it.size() == 2 && it[1].toString().endsWith(".seqz")
+            seqz:  it.size() == 2 && it[1].toString().endsWith(".seqz.gz")
             bam:   it.size() == 5
         }
         .set { ch_input }
@@ -89,10 +89,10 @@ workflow CNV {
 
     ch_versions = ch_versions.mix(SEQUENZAUTILS_BIN.out.versions.first())
 
-    //SEQUENZAUTILS_BIN.out.seqz_bin = SEQUENZAUTILS_BIN.out.seqz_bin.mix(ch_input.seqz)
+    ch_seqz_final = ch_input.seqz.mix(SEQUENZAUTILS_BIN.out.seqz_bin)
 
     SEQUENZAUTILS_RSEQZ(
-        SEQUENZAUTILS_BIN.out.seqz_bin,
+        ch_seqz_final,
         ch_purity
         )
 

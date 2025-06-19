@@ -77,8 +77,8 @@ workflow PIPELINE_INITIALISATION {
         .map { meta, normal_bam, normal_bai, tumour_bam, tumour_bai, seqz , sex, gamma, ploidy ->
                meta.id     = meta.patient + "_" + meta.sample
                meta.sex    = sex ?: "XX"
-               meta.ploidy = meta.ploidy ?: 7
-               meta.gamma  = meta.gamma  ?: 20
+               meta.ploidy = ploidy ?: 7
+               meta.gamma  = gamma  ?: 20
 
             if (seqz) {
                 return [meta, seqz]
