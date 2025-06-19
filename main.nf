@@ -63,7 +63,7 @@ workflow SOTTORIVALAB_CNV {
     PREPARE_GENOME (
         fasta_ch
     )
-    println(params.gc_wiggle)
+    // println(params.gc_wiggle)
     gc_wiggle_ch = params.create_gc_wiggle
         ? PREPARE_GENOME.out.gc_wiggle
         : Channel.fromPath(params.gc_wiggle).map { it -> [ [id: it.baseName], it ] }.collect()
@@ -76,35 +76,23 @@ workflow SOTTORIVALAB_CNV {
         ? Channel.value(params.bin_size)
         : Channel.value(50)
 
-    purity_ch = params.purity
-        ? Channel.value(params.purity)
-        : Channel.value( [  20, 40, 60, 80 ] )
+    if (params.purity == "range" )
+        { purity_ch =  Channel.value([20, 40, 60, 80, 100]) }
+        else if (params.purity instanceof Number )
+        { purity_ch = Channel.value(params.purity) }
 
-    ploidy_ch = params.purity
-        ? Channel.value(params.ploidy)
-        : Channel.value(7)
 
-    gamma_ch = params.gamma
-        ? Channel.value(params.gamma)
-        : Channel.value(40)
-
-    sex_ch = params.sex
-        ? Channel.value(params.sex)
-        : Channel.value("XX")
-
-//
+    //
     // WORKFLOW: Run pipeline
     //
+
     CNV (
         samplesheet,
         fasta_ch,
         fasta_fai_ch,
         gc_wiggle_ch,
         bin_size_ch,
-        purity_ch,
-		ploidy_ch,
-		gamma_ch,
-		sex_ch
+        purity_ch
     )
     emit:
     multiqc_report = CNV.out.multiqc_report // channel: /path/to/multiqc_report.html

@@ -1,6 +1,6 @@
 process SEQUENZAUTILS_BIN {
-    tag "$meta.id"
-    label 'process_medium'
+    tag "${meta.id}_${bin_size}"
+    label 'process_low'
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -12,7 +12,7 @@ process SEQUENZAUTILS_BIN {
     val bin_size
 
     output:
-    tuple val(meta), path("*_bin${bin_size}.seqz"), emit: seqz_bin
+    tuple val(meta), path("*_bin${bin_size}.seqz.gz"), emit: seqz_bin
     path "versions.yml"          , emit: versions
 
     when:
@@ -25,7 +25,7 @@ process SEQUENZAUTILS_BIN {
         seqz_binning \\
         -w $bin_size \\
         --seqz $concat_seqz \\
-        -o ${prefix}_bin${bin_size}.seqz
+        -o ${prefix}_bin${bin_size}.seqz.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

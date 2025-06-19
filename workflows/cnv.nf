@@ -28,29 +28,39 @@ workflow CNV {
     ch_fasta_fai   // channel from reference folder
     ch_wig         // channel from reference folder
     ch_bin_size    // default sequenza-utils bin size
-    ch_purity      // purity options for rseqz
-	ch_ploidy      // ploidy options for rseqz
-    ch_gamma       // gamma options for rseqz
-	ch_sex         // sex options for rseqz
+    ch_purity      // channel with purity values
 
     main:
-
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    // prepare chromosomes for bam2seqz this allows parallelization over chromosomes
+    //ch_samplesheet.view{"Samplesheet: $it"}
+
+    // Branching logic based on presence of seqz
+    ch_samplesheet
+        //.view{"Samplesheet: $it"}
+        .branch {
+            seqz:  it.size() == 2 && it[1].toString().endsWith(".seqz")
+            bam:   it.size() == 5
+        }
+        .set { ch_input }
+
     chromosome_list = ch_fasta_fai
                     .map{ it[1] }
                     .splitCsv(sep: "\t")
                     .map{ chr -> chr[0] }
                     .filter( ~/^chr\d+|^chr[X,Y]|^\d+|[X,Y]/ )
                     .collect()
+
+    chromosome_list.view{"Chromosome list: $it"}
+    ch_fasta.view{"Fasta input: $it"}
     //
     // MODULE: BAM2SEQZ
     //
+    //ch_input.bam.view{"BAM input: $it"}
 
     SEQUENZAUTILS_BAM2SEQZ (
-        ch_samplesheet,
+        ch_input.bam,
         ch_fasta,
         ch_fasta_fai,
         ch_wig,
@@ -68,6 +78,7 @@ workflow CNV {
     // MODULE: TABIX
     //
     // merge and index bam2seqz output
+
     TABIX_TABIX(merge_seqz_input)
 
     ch_versions = ch_versions.mix(TABIX_TABIX.out.versions.first())
@@ -76,6 +87,7 @@ workflow CNV {
     // MODULE: BINNING
     //
     // binning of bam2seqz output default bin size is 50kb
+
 	SEQUENZAUTILS_BIN (
         TABIX_TABIX.out.concat_seqz,
         ch_bin_size
@@ -83,16 +95,17 @@ workflow CNV {
 
     ch_versions = ch_versions.mix(SEQUENZAUTILS_BIN.out.versions.first())
 
-    rseqz_input = SEQUENZAUTILS_BIN.out.seqz_bin
+    //SEQUENZAUTILS_BIN.out.seqz_bin = SEQUENZAUTILS_BIN.out.seqz_bin.mix(ch_input.seqz)
 
-	SEQUENZAUTILS_RSEQZ( rseqz_input,
-                         ch_sex,
-                         ch_ploidy,
-                         ch_gamma,
-						 ch_purity )
+    SEQUENZAUTILS_RSEQZ(
+        SEQUENZAUTILS_BIN.out.seqz_bin,
+        ch_purity
+        )
 
+    //
     // Collate and save software versions
     //
+
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
@@ -104,6 +117,7 @@ workflow CNV {
     //
     // MODULE: MultiQC
     //
+
     ch_multiqc_config        = Channel.fromPath(
         "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config = params.multiqc_config ?

@@ -1,5 +1,5 @@
 process SEQUENZAUTILS_BAM2SEQZ {
-    tag "$meta.id"
+    tag "${meta.id}_${chromosome}"
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
