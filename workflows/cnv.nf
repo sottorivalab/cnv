@@ -66,18 +66,24 @@ workflow CNV {
 
 	// collect bam2seqz output for binning
     SEQUENZAUTILS_BAM2SEQZ.out.seqz
-         .groupTuple()
-         .map { meta, files ->
-             // Sort files by chromosome natural order
-             def chr_order = [*(1..22), 'X', 'Y']
-             def chr_index = { file ->
-                 def chr = file.getName() =~ /chr(\d+|X|Y)/
-                 return chr ? chr_order.indexOf(chr[0][1].toString()) : 999
-             }
-             def sorted = files.sort { a, b -> chr_index(a) <=> chr_index(b) }
-             tuple(meta, sorted)
-         }
-         .set { merge_seqz_input }
+        .groupTuple()
+        .combine(chromosome_list) { group, chr_order ->
+
+            def chr_index = { file ->
+                def match = (file.getName() =~ /(chr(?:\d+|X|Y))/)
+                def chr = match ? match[0][1] : null
+                return chr && chr_order.contains(chr) ? chr_order.indexOf(chr) : 999
+            }
+
+            // Filter: keep only files matching chr1–22, chrX, chrY
+            def canonical = group[1].findAll { it.getName() =~ /chr(?:\d+|X|Y)/ }
+
+            // Sort by .fai order
+            def sorted = canonical.sort { a, b -> chr_index(a) <=> chr_index(b) }
+
+            tuple(group[0], sorted)
+        }
+        .set { merge_seqz_input }
 
 	//
     // MODULE: TABIX
