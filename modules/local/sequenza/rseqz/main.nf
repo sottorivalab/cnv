@@ -19,8 +19,10 @@ process SEQUENZAUTILS_RSEQZ {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}_${purity}"
+	def seqz = seqz_bin.toString().replaceAll(/\.gz/,'') 
     """
-    analyse_cn_sequenza.R ${seqz_bin} ${prefix} ${meta.id} ${meta.sex} ${meta.ploidy} ${purity} ${meta.gamma}
+    zcat $seqz_bin > $seqz
+	analyse_cn_sequenza.R ${seqz} ${prefix} ${meta.id} ${meta.sex} ${meta.ploidy} ${purity} ${meta.gamma}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
