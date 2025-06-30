@@ -27,8 +27,8 @@ workflow CNV {
     ch_fasta       // channel from reference folder
     ch_fasta_fai   // channel from reference folder
     ch_wig         // channel from reference folder
-    ch_bin_size    // default sequenza-utils bin size
-    ch_purity      // channel with purity values
+    ch_bin_size    // default or supplied  sequenza-utils bin size
+    ch_purity      // purity default or supplied
 
     main:
     ch_versions = Channel.empty()
@@ -46,8 +46,8 @@ workflow CNV {
                     .map{ it[1] }
                     .splitCsv(sep: "\t")
                     .map{ chr -> chr[0] }
-                    .filter( ~/^chr\d+|^chr[X,Y]|^\d+|[X,Y]/ )
-                    .collect()
+					.filter( ~/^chr\d+|^chr[X,Y]|^\d+|[X,Y]/ )
+					.collect()
 
 
     //
@@ -66,24 +66,29 @@ workflow CNV {
 
 	// collect bam2seqz output for binning
     SEQUENZAUTILS_BAM2SEQZ.out.seqz
-         .groupTuple()
-         .map { meta, files ->
-             // Sort files by chromosome natural order
-             def chr_order = [*(1..22), 'X', 'Y']
-             def chr_index = { file ->
-                 def chr = file.getName() =~ /chr(\d+|X|Y)/
-                 return chr ? chr_order.indexOf(chr[0][1].toString()) : 999
-             }
-             def sorted = files.sort { a, b -> chr_index(a) <=> chr_index(b) }
-             tuple(meta, sorted)
-         }
-         .set { merge_seqz_input }
-
+        .groupTuple()
+        .map { meta, files ->
+            def chr_order = (1..22).collect { it.toString() } + ['X', 'Y']
+    
+            def chr_index = { file ->
+                def match = (file.getName() =~ /chr(\d+|X|Y)/)
+                def chr = match ? match[0][1] : null
+                return chr && chr_order.contains(chr) ? chr_order.indexOf(chr) : 999
+            }
+    
+            def canonical = files.findAll { it.getName() =~ /chr(\d+|X|Y)/ }
+            def sorted = canonical.sort { a, b -> chr_index(a) <=> chr_index(b) }
+    
+            // Debug: print the sorted file names
+            println "Sorted order for ${meta.id}: " + sorted*.getName()
+    
+            tuple(meta, sorted)
+        }
+        .set { merge_seqz_input }
 	//
     // MODULE: TABIX
     //
     // merge and index bam2seqz output
-
     merge_seqz_input.view{ "merge_seqz_input: ${it}" }
 
     TABIX_TABIX(merge_seqz_input)
