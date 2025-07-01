@@ -26,7 +26,8 @@ workflow CNV {
     ch_samplesheet // channel: samplesheet read in from --input
     ch_fasta       // channel from reference folder
     ch_fasta_fai   // channel from reference folder
-    ch_wig         // channel from reference folder
+    ch_fasta_gzi   // channel from reference folder
+	ch_wig         // channel from reference folder
     ch_bin_size    // default or supplied  sequenza-utils bin size
     ch_purity      // purity default or supplied
 
@@ -58,6 +59,7 @@ workflow CNV {
         ch_input.bam,
         ch_fasta,
         ch_fasta_fai,
+		ch_fasta_gzi,
         ch_wig,
         chromosome_list
     )

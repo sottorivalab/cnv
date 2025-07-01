@@ -30,6 +30,7 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_cnv_
 params.fasta     = getGenomeAttribute('fasta')
 params.fasta_fai = getGenomeAttribute('fasta_fai')
 params.gc_wiggle = getGenomeAttribute('wiggle')
+params.fasta_gzi = getGenomeAttribute('fasta_gzi')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,6 +73,10 @@ workflow SOTTORIVALAB_CNV {
         ? Channel.fromPath(params.fasta_fai).map{ it -> [ [id:'fai'], it ] }.collect()
         : PREPARE_GENOME.out.fasta_fai
 
+    fasta_gzi_ch = params.fasta_gzi
+        ? Channel.fromPath(params.fasta_gzi).map{ it -> [ [id:'gzi'], it ] }.collect()
+        : PREPARE_GENOME.out.fasta_gzi // TODO make gzi if absent
+
     bin_size_ch = params.bin_size
         ? Channel.value(params.bin_size)
         : Channel.value(50)
@@ -90,6 +95,7 @@ workflow SOTTORIVALAB_CNV {
         samplesheet,
         fasta_ch,
         fasta_fai_ch,
+		fasta_gzi_ch,
         gc_wiggle_ch,
         bin_size_ch,
         purity_ch

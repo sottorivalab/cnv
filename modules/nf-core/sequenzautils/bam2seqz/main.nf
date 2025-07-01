@@ -10,7 +10,8 @@ process SEQUENZAUTILS_BAM2SEQZ {
     tuple val(meta), path(normalbam), path(normalbai), path(tumourbam), path(tumourbai)
     tuple val(meta_2), path(fasta)
     tuple val(meta_3), path(fasta_fai)
-    tuple val(meta_4), path(wigfile)
+    tuple val(meta_4), path(fasta_gzi)
+	tuple val(meta_5), path(wigfile)
     each chromosome
 
     output:
