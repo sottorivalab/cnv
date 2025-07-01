@@ -39,7 +39,7 @@ workflow CNV {
     ch_samplesheet
         .branch {
             seqz:  it.size() == 2 && it[1].toString().endsWith(".seqz.gz")
-            bam:   it.size() == 5
+            bam:   it.size() == 3
         }
         .set { ch_input }
 
@@ -55,8 +55,16 @@ workflow CNV {
     // MODULE: BAM2SEQZ
     //
 
+    ch_input.bam
+        .branch { meta, bam, bai ->
+            normal: meta.status == 'normal'
+            tumour: meta.status == 'tumour'
+        }
+        .set { bam_ch }
+
     SEQUENZAUTILS_BAM2SEQZ (
-        ch_input.bam,
+        bam_ch.tumour,
+        bam_ch.normal,
         ch_fasta,
         ch_fasta_fai,
 		ch_fasta_gzi,
@@ -71,19 +79,19 @@ workflow CNV {
         .groupTuple()
         .map { meta, files ->
             def chr_order = (1..22).collect { it.toString() } + ['X', 'Y']
-    
+
             def chr_index = { file ->
                 def match = (file.getName() =~ /chr(\d+|X|Y)/)
                 def chr = match ? match[0][1] : null
                 return chr && chr_order.contains(chr) ? chr_order.indexOf(chr) : 999
             }
-    
+
             def canonical = files.findAll { it.getName() =~ /chr(\d+|X|Y)/ }
             def sorted = canonical.sort { a, b -> chr_index(a) <=> chr_index(b) }
-    
+
             // Debug: print the sorted file names
             println "Sorted order for ${meta.id}: " + sorted*.getName()
-    
+
             tuple(meta, sorted)
         }
         .set { merge_seqz_input }
@@ -91,7 +99,6 @@ workflow CNV {
     // MODULE: TABIX
     //
     // merge and index bam2seqz output
-    merge_seqz_input.view{ "merge_seqz_input: ${it}" }
 
     TABIX_TABIX(merge_seqz_input)
 

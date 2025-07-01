@@ -127,6 +127,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
+
     SOTTORIVALAB_CNV (
         PIPELINE_INITIALISATION.out.samplesheet
     )

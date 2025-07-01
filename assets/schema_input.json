@@ -17,25 +17,18 @@
         "pattern": "^\\S+$",
         "meta": ["sample"]
       },
-      "normal_bam": {
+      "status": {
+            "type": "string",
+            "enum": ["normal", "tumour"],
+            "meta": ["status"]
+     },
+      "bam": {
         "type": "string",
         "format": "file-path",
         "exists": true,
         "pattern": "^\\S+\\.bam$"
       },
-      "normal_bai": {
-        "type": "string",
-        "format": "file-path",
-        "exists": true,
-        "pattern": "^\\S+\\.bai$"
-      },
-      "tumour_bam": {
-        "type": "string",
-        "format": "file-path",
-        "exists": true,
-        "pattern": "^\\S+\\.bam$"
-      },
-      "tumour_bai": {
+      "bai": {
         "type": "string",
         "format": "file-path",
         "exists": true,
@@ -62,7 +55,7 @@
     },
     "required": ["patient", "sample"],
     "oneOf": [
-      { "required": ["normal_bam", "tumour_bam"] },
+      { "required": ["bam", "bai"] },
       { "required": ["seqz"] }
     ]
   }
