@@ -36,7 +36,7 @@ process SEQUENZAUTILS_BAM2SEQZ {
         bam2seqz \\
         $args \\
         -n $normalbam \\
-        -t $tumourbam \\
+        -t $bam \\
         --fasta $fasta \\
         -gc $wigfile \\
         --het ${params.het} \\
