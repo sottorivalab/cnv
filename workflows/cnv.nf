@@ -13,6 +13,7 @@ include { TABIX_TABIX            } from '../modules/nf-core/tabix/tabix/'
 include { SEQUENZAUTILS_BIN      } from '../modules/local/sequenzautils/bin/'
 include { SEQUENZAUTILS_RSEQZ    } from '../modules/local/sequenza/rseqz/'
 include { GAWK                   } from '../modules/nf-core/gawk/'
+include { ASCAT                  } from '../modules/nf-core/ascat/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -29,6 +30,8 @@ workflow CNV {
     ch_fasta_gzi   // channel from reference folder
 	ch_wig         // channel from reference folder
     ch_bin_size    // default or supplied  sequenza-utils bin size
+    ch_allele_files // channel from reference folder
+    ch_loci_files   // channel from reference folder
     ch_purity      // purity default or supplied
 
     main:
@@ -43,13 +46,17 @@ workflow CNV {
         }
         .set { ch_input }
 
+
+    if (!workflow.stubRun){
     chromosome_list = ch_fasta_fai
                     .map{ it[1] }
                     .splitCsv(sep: "\t")
                     .map{ chr -> chr[0] }
 					.filter( ~/^chr\d+|^chr[X,Y]|^\d+|[X,Y]/ )
 					.collect()
-
+    } else {
+        chromosome_list = Channel.value(['chr1', 'chr2', 'chr3'])
+    }
 
     //
     // MODULE: BAM2SEQZ
@@ -61,6 +68,8 @@ workflow CNV {
             tumour: meta.status == 'tumour'
         }
         .set { bam_ch }
+
+
 
     SEQUENZAUTILS_BAM2SEQZ (
         bam_ch.tumour,
@@ -122,6 +131,28 @@ workflow CNV {
         ch_seqz_final,
         ch_purity
         )
+
+// TODO: check versions for RSEQZ
+    ch_versions = ch_versions.mix(SEQUENZAUTILS_RSEQZ.out.versions.first())
+
+    bam_ch.tumour.view{ "Processing tumour BAM: ${it}" }
+    bam_ch.normal.view{ "Processing normal BAM: ${it}" }
+    ch_fasta.view{ "Using FASTA: ${it}" }
+    ch_fasta_fai.view{ "Using FASTA index: ${it}" }
+    ch_fasta_gzi.view{ "Using FASTA gzi index: ${it}" }
+    ch_wig.view{ "Using GC wiggle: ${it}" }
+    chromosome_list.view{ "Using chromosome list: ${it}" }
+
+    ASCAT (bam_ch.tumour,
+           bam_ch.normal,
+           ch_allele_files,
+           ch_loci_files,
+           [],
+           ch_fasta,
+
+       )
+
+
 
     //
     // Collate and save software versions

@@ -27,10 +27,12 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_cnv_
 
 //   This is an example of how to use getGenomeAttribute() to fetch parameters
 //   from igenomes.config using `--genome`
-params.fasta     = getGenomeAttribute('fasta')
-params.fasta_fai = getGenomeAttribute('fasta_fai')
-params.gc_wiggle = getGenomeAttribute('wiggle')
-params.fasta_gzi = getGenomeAttribute('fasta_gzi')
+params.fasta        = getGenomeAttribute('fasta')
+params.fasta_fai    = getGenomeAttribute('fasta_fai')
+params.gc_wiggle    = getGenomeAttribute('gc_wiggle')
+params.fasta_gzi    = getGenomeAttribute('fasta_gzi')
+params.allele_files = getGenomeAttribute('allele_files')
+params.loci_files   = getGenomeAttribute('loci_files')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -64,10 +66,10 @@ workflow SOTTORIVALAB_CNV {
     PREPARE_GENOME (
         fasta_ch
     )
-    // println(params.gc_wiggle)
-    gc_wiggle_ch = params.create_gc_wiggle
-        ? PREPARE_GENOME.out.gc_wiggle
-        : Channel.fromPath(params.gc_wiggle).map { it -> [ [id: it.baseName], it ] }.collect()
+
+    gc_wiggle_ch = params.gc_wiggle
+        ? Channel.fromPath(params.gc_wiggle).map { it -> [ [id:'gc_wiggle'], it ] }.collect()
+        : PREPARE_GENOME.out.gc_wiggle
 
     fasta_fai_ch = params.fasta_fai
         ? Channel.fromPath(params.fasta_fai).map{ it -> [ [id:'fai'], it ] }.collect()
@@ -76,6 +78,14 @@ workflow SOTTORIVALAB_CNV {
     fasta_gzi_ch = params.fasta_gzi
         ? Channel.fromPath(params.fasta_gzi).map{ it -> [ [id:'gzi'], it ] }.collect()
         : PREPARE_GENOME.out.fasta_gzi // TODO make gzi if absent
+
+    allele_files_ch = params.allele_files
+        ? Channel.fromPath(params.allele_files).map{ it -> [ [id:'allele_files'], it ] }.collect()
+        : Channel.empty()
+
+    loci_files_ch = params.loci_files
+        ? Channel.fromPath(params.loci_files).map{ it -> [ [id:'loci_files'], it ] }.collect()
+        : Channel.empty()
 
     bin_size_ch = params.bin_size
         ? Channel.value(params.bin_size)
@@ -97,6 +107,8 @@ workflow SOTTORIVALAB_CNV {
         fasta_fai_ch,
 		fasta_gzi_ch,
         gc_wiggle_ch,
+        allele_files_ch,
+        loci_files_ch,
         bin_size_ch,
         purity_ch
     )

@@ -107,6 +107,10 @@
                     "type": "string",
                     "description": "Path to FASTA genome index"
                 },
+                "fasta_gzi": {
+                    "type": "string",
+                    "description": "Path to FASTA gzi index"
+                },
                 "gc_wiggle": {
                     "type": "string",
                     "format": "file-path",
