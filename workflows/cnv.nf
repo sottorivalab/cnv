@@ -24,15 +24,18 @@ include { ASCAT                  } from '../modules/nf-core/ascat/main'
 workflow CNV {
 
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
-    ch_fasta       // channel from reference folder
-    ch_fasta_fai   // channel from reference folder
-    ch_fasta_gzi   // channel from reference folder
-	ch_wig         // channel from reference folder
-    ch_bin_size    // default or supplied  sequenza-utils bin size
-    ch_allele_files // channel from reference folder
-    ch_loci_files   // channel from reference folder
-    ch_purity      // purity default or supplied
+    ch_samplesheet    // channel: samplesheet read in from --input
+    ch_fasta          // channel from reference folder
+    ch_fasta_fai      // channel from reference folder
+    ch_fasta_gzi      // channel from reference folder
+	ch_wig            // channel from reference folder
+    ch_bin_size       // default or supplied  sequenza-utils bin size
+    ch_purity         // purity default or supplied
+    ch_ascat_alleles
+    ch_ascat_genome
+    ch_ascat_loci
+    ch_ascat_loci_gc
+    ch_ascat_loci_rt
 
     main:
     ch_versions = Channel.empty()
@@ -135,24 +138,17 @@ workflow CNV {
 // TODO: check versions for RSEQZ
     ch_versions = ch_versions.mix(SEQUENZAUTILS_RSEQZ.out.versions.first())
 
-    bam_ch.tumour.view{ "Processing tumour BAM: ${it}" }
-    bam_ch.normal.view{ "Processing normal BAM: ${it}" }
-    ch_fasta.view{ "Using FASTA: ${it}" }
-    ch_fasta_fai.view{ "Using FASTA index: ${it}" }
-    ch_fasta_gzi.view{ "Using FASTA gzi index: ${it}" }
-    ch_wig.view{ "Using GC wiggle: ${it}" }
-    chromosome_list.view{ "Using chromosome list: ${it}" }
-
-    ASCAT (bam_ch.tumour,
-           bam_ch.normal,
-           ch_allele_files,
-           ch_loci_files,
+    ASCAT (bam_ch.normal,
+           bam_ch.tumour,
+           ch_ascat_alleles,
+           ch_ascat_loci,
            [],
            ch_fasta,
-
+           ch_ascat_loci_gc,
+           ch_ascat_loci_rt
        )
 
-
+    ch_versions = ch_versions.mix(ASCAT.out.versions.first())
 
     //
     // Collate and save software versions

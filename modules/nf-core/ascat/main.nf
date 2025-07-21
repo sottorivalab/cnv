@@ -8,13 +8,14 @@ process ASCAT {
         'community.wave.seqera.io/library/ascat_cancerit-allelecount:c3e8749fa4af0e99' }"
 
     input:
-    tuple val(meta), path(input_normal), path(index_normal), path(input_tumor), path(index_tumor)
-    path(allele_files)
-    path(loci_files)
+    tuple val(meta), path(input_tumour), path(index_tumour)
+    tuple val(meta1), path(input_normal), path(index_normal)
+    tuple val(meta2), path(allele_files)
+    tuple val(meta3), path(loci_files)
     path(bed_file)  // optional
-    path(fasta)     // optional
-    path(gc_file)   // optional
-    path(rt_file)   // optional
+    tuple val(meta4), path(fasta)     // optional
+    tuple val(meta5), path(gc_file)   // optional
+    tuple val(meta6), path(rt_file)   // optional
 
     output:
     tuple val(meta), path("*alleleFrequencies_chr*.txt"), emit: allelefreqs
