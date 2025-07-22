@@ -13,8 +13,8 @@ include { TABIX_TABIX            } from '../modules/nf-core/tabix/tabix/'
 include { SEQUENZAUTILS_BIN      } from '../modules/local/sequenzautils/bin/'
 include { SEQUENZAUTILS_RSEQZ    } from '../modules/local/sequenza/rseqz/'
 include { GAWK                   } from '../modules/nf-core/gawk/'
-include { ASCAT                  } from '../modules/nf-core/ascat/main'
-
+include { ASCAT                  } from '../modules/nf-core/ascat'
+include { UNZIP                  } from '../modules/nf-core/unzip'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -138,7 +138,7 @@ workflow CNV {
         ch_purity
         )
 
-// TODO: check versions for RSEQZ
+    // TODO: check versions for RSEQZ
     ch_versions = ch_versions.mix(SEQUENZAUTILS_RSEQZ.out.versions.first())
 
     ASCAT (bam_ch.normal,
