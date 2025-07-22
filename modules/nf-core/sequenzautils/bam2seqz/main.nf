@@ -26,12 +26,6 @@ process SEQUENZAUTILS_BAM2SEQZ {
     def args = task.ext.args ?: "-C $chromosome"
     def prefix = task.ext.prefix ?: "${meta.id}_${chromosome}"
     """
-    # Create a named pipe for stderr
-    mkfifo stderr.pipe
-
-    # Start live monitor in background — looks for failure pattern and kills main process if matched
-    ( tail -F stderr.pipe | grep -m 1 '\\[E::faidx_adjust_position\\] The sequence "chr.*" was not found' && echo "Sequence not found — aborting early" >&2 && kill 0 ) &
-    
     sequenza-utils \\
         bam2seqz \\
         $args \\
@@ -41,11 +35,7 @@ process SEQUENZAUTILS_BAM2SEQZ {
         -gc $wigfile \\
         --het ${params.het} \\
         --hom ${params.hom} \\
-        -o ${prefix}.gz \\
-        2> >(tee stderr.pipe >&2)
-
-    # If command exits normally, we’re good — kill background tail (if still running)
-    pkill -P \$\$ tail || true
+        -o ${prefix}.gz 
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
