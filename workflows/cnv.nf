@@ -24,13 +24,13 @@ include { ASCAT                  } from '../modules/nf-core/ascat/main'
 workflow CNV {
 
     take:
-    ch_samplesheet    // channel: samplesheet read in from --input
-    ch_fasta          // channel from reference folder
-    ch_fasta_fai      // channel from reference folder
-    ch_fasta_gzi      // channel from reference folder
-	ch_wig            // channel from reference folder
-    ch_bin_size       // default or supplied  sequenza-utils bin size
-    ch_purity         // purity default or supplied
+    ch_samplesheet      // channel: samplesheet read in from --input
+    ch_fasta            // channel from reference folder
+    ch_fasta_fai        // channel from reference folder
+    ch_fasta_gzi        // channel from reference folder
+	ch_wig              // channel from reference folder
+    ch_bin_size         // default or supplied  sequenza-utils bin size
+    ch_purity           // purity default or supplied
     ch_ascat_alleles
     ch_ascat_genome
     ch_ascat_loci
@@ -49,7 +49,7 @@ workflow CNV {
         }
         .set { ch_input }
 
-
+    // stub just run on three if it is a stub test
     if (!workflow.stubRun){
     chromosome_list = ch_fasta_fai
                     .map{ it[1] }
@@ -64,6 +64,9 @@ workflow CNV {
     //
     // MODULE: BAM2SEQZ
     //
+    //
+	// split into two channels normal and tumour for bam2seqz and ascat
+	//
 
     ch_input.bam
         .branch { meta, bam, bai ->
