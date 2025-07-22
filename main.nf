@@ -66,12 +66,12 @@ workflow SOTTORIVALAB_CNV {
             .collect() :
         Channel.empty()
 
-    ascat_alleles = params.ascat_alleles ? Channel.fromPath(params.ascat_alleles.collect():Channel.empty()
-    ascat_genome = params.ascat_genome ? Channel.fromPath(params.ascat_genome.collect():Channel.empty()
-    ascat_loci = params.ascat_loci ? Channel.fromPath(params.ascat_loci.collect():Channel.empty()
-    ascat_loci_gc = params.ascat_loci_gc ? Channel.fromPath(params.ascat_loci_gc.collect():Channel.empty()
-    ascat_loci_rt = params.ascat_loci_rt ? Channel.fromPath(params.ascat_loci_rt.collect():Channel.empty()
-  
+    ascat_alleles = params.ascat_alleles ? Channel.fromPath(params.ascat_alleles).collect():Channel.empty()
+    ascat_genome = params.ascat_genome ? Channel.fromPath(params.ascat_genome).collect():Channel.empty()
+    ascat_loci = params.ascat_loci ? Channel.fromPath(params.ascat_loci).collect():Channel.empty()
+    ascat_loci_gc = params.ascat_loci_gc ? Channel.fromPath(params.ascat_loci_gc).collect():Channel.empty()
+    ascat_loci_rt = params.ascat_loci_rt ? Channel.fromPath(params.ascat_loci_rt).collect():Channel.empty()
+
     PREPARE_GENOME (
         fasta_ch,
         ascat_alleles,
