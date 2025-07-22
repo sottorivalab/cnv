@@ -66,29 +66,25 @@ workflow SOTTORIVALAB_CNV {
             .collect() :
         Channel.empty()
 
+    ascat_alleles = params.ascat_alleles ? Channel.fromPath(params.ascat_alleles.collect():Channel.empty()
+    ascat_genome = params.ascat_genome ? Channel.fromPath(params.ascat_genome.collect():Channel.empty()
+    ascat_loci = params.ascat_loci ? Channel.fromPath(params.ascat_loci.collect():Channel.empty()
+    ascat_loci_gc = params.ascat_loci_gc ? Channel.fromPath(params.ascat_loci_gc.collect():Channel.empty()
+    ascat_loci_rt = params.ascat_loci_rt ? Channel.fromPath(params.ascat_loci_rt.collect():Channel.empty()
+  
     PREPARE_GENOME (
-        fasta_ch
+        fasta_ch,
+        ascat_alleles,
+        ascat_loci,
+        ascat_loci_gc,
+        ascat_loci_rt
     )
 
-    ascat_alleles_ch = params.ascat_alleles
-        ? Channel.fromPath(params.ascat_alleles).map { it -> [ [id:'ascat_alleles'], it ] }.collect()
-        : channel.empty()
-
-    ascat_genome_ch = params.ascat_genome
-        ? Channel.value(params.ascat_genome).map { it -> [ [id:'ascat_genome'], it ] }.collect()
-        : channel.empty()
-
-    ascat_loci_ch = params.ascat_loci
-        ? Channel.fromPath(params.ascat_loci).map { it -> [ [id:'ascat_loci'], it ] }.collect()
-        : channel.empty()
-
-    ascat_loci_gc_ch = params.ascat_loci_gc
-        ? Channel.fromPath(params.ascat_loci_gc).map { it -> [ [id:'ascat_loci_gc'], it ] }.collect()
-        : channel.empty()
-
-    ascat_loci_rt_ch = params.ascat_loci_rt
-        ? Channel.fromPath(params.ascat_loci_rt).map { it -> [ [id:'ascat_loci_rt'], it ] }.collect()
-        : channel.empty()
+    // For ASCAT, extracted from zip or tar.gz files
+    ascat_alleles = PREPARE_GENOME.out.allele_files
+    ascat_loci    = PREPARE_GENOME.out.loci_files
+    ascat_loci_gc = PREPARE_GENOME.out.gc_file
+    ascat_loci_rt = PREPARE_GENOME.out.rt_file
 
     gc_wiggle_ch = params.gc_wiggle
         ? Channel.fromPath(params.gc_wiggle).map { it -> [ [id:'gc_wiggle'], it ] }.collect()
@@ -124,11 +120,11 @@ workflow SOTTORIVALAB_CNV {
         gc_wiggle_ch,
         bin_size_ch,
         purity_ch,
-        ascat_alleles_ch,
-        ascat_genome_ch,
-        ascat_loci_ch,
-        ascat_loci_gc_ch,
-        ascat_loci_rt_ch
+        allele_files,
+        chr_files,
+        gc_file,
+        loci_files,
+        rt_file
     )
     emit:
     multiqc_report = CNV.out.multiqc_report // channel: /path/to/multiqc_report.html

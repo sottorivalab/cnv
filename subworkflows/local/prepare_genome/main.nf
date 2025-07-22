@@ -47,6 +47,10 @@ workflow PREPARE_GENOME {
     emit:
     gc_wiggle = SEQUENZAUTILS_GCWIGGLE.out.gc_wiggle.collect() // path: gcwiggle
     fasta_fai = SAMTOOLS_FAIDX.out.fai.collect()               // path: genome.fasta.fai
-
+    allele_files    // path: allele_files
+    chr_files       // path: chr_files
+    gc_file         // path: gc_file
+    loci_files      // path: loci_files
+    rt_file         // path: rt_file
     versions        // channel: [ versions.yml ]
 }
