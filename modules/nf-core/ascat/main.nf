@@ -7,15 +7,14 @@ process ASCAT {
         'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/4c/4cf02c7911ee5e974ce7db978810770efbd8d872ff5ab3462d2a11bcf022fab5/data':
         'community.wave.seqera.io/library/ascat_cancerit-allelecount:c3e8749fa4af0e99' }"
 
-    input:
-    tuple val(meta), path(input_tumour), path(index_tumour)
-    tuple val(meta1), path(input_normal), path(index_normal)
-    tuple val(meta2), path(allele_files)
-    tuple val(meta3), path(loci_files)
+	input:
+    tuple val(meta), path(input_normal), path(index_normal), path(input_tumour), path(index_tumour)
+    path(allele_files)
+    path(loci_files)
     path(bed_file)  // optional
-    tuple val(meta4), path(fasta)     // optional
-    tuple val(meta5), path(gc_file)   // optional
-    tuple val(meta6), path(rt_file)   // optional
+    tuple val(meta2), path(fasta)     // optional
+    path(gc_file)   // optional
+    path(rt_file)   // optional
 
     output:
     tuple val(meta), path("*alleleFrequencies_chr*.txt"), emit: allelefreqs
@@ -36,13 +35,13 @@ process ASCAT {
     def prefix         = task.ext.prefix      ?: "${meta.id}"
     def gender         = args.gender          ?  "${args.gender}"        : "NULL"
     def genomeVersion  = args.genomeVersion   ?  "${args.genomeVersion}" : "NULL"
-    def purity         = args.purity          ?  "${args.purity}"        : "NULL"
+	def purity         = args.purity          ?  "${args.purity}"        : "NULL"
     def ploidy         = args.ploidy          ?  "${args.ploidy}"        : "NULL"
     def gc_input       = gc_file              ?  "${gc_file}"            : "NULL"
     def rt_input       = rt_file              ?  "${rt_file}"            : "NULL"
 
     def minCounts_arg                    = args.minCounts                      ?  ", minCounts = ${args.minCounts}"         : ""
-    def bed_file_arg                     = bed_file                            ?  ", BED_file = '${bed_file}'"              : ""
+    def bed_file_arg                     = bed_file.getName() != 'no_bed'      ?  ", BED_file = '${bed_file}'"              : ""
     def chrom_names_arg                  = args.chrom_names                    ?  ", chrom_names = ${args.chrom_names}"     : ""
     def min_base_qual_arg                = args.min_base_qual                  ?  ", min_base_qual = ${args.min_base_qual}" : ""
     def min_map_qual_arg                 = args.min_map_qual                   ?  ", min_map_qual = ${args.min_map_qual}"   : ""
@@ -59,7 +58,7 @@ process ASCAT {
         additional_allelecounter_arg = ""
     }
 
-    """
+   """
     #!/usr/bin/env Rscript
     library(RColorBrewer)
     library(ASCAT)
@@ -99,7 +98,7 @@ process ASCAT {
 
     # Prepare from BAM files
     ascat.prepareHTS(
-        tumourseqfile = "${input_tumor}",
+        tumourseqfile = "${input_tumour}",
         normalseqfile = "${input_normal}",
         tumourname = paste0("${prefix}", ".tumour"),
         normalname = paste0("${prefix}", ".normal"),
@@ -179,7 +178,7 @@ process ASCAT {
     # Plot the segmented data
     ascat.plotSegmentedData(ascat.bc)
 
-    # Run ASCAT to fit every tumor to a model, inferring ploidy, normal cell contamination,
+    # Run ASCAT to fit every tumour to a model, inferring ploidy, normal cell contamination,
     # and discrete copy numbers
     # If psi and rho are manually set:
     if (!is.null(${purity}) && !is.null(${ploidy})){
@@ -225,7 +224,7 @@ process ASCAT {
     close(f)
     """
 
-    stub:
+	stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     touch ${prefix}.after_correction.gc_rt.test.tumour.germline.png

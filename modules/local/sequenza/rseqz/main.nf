@@ -1,7 +1,7 @@
 process SEQUENZAUTILS_RSEQZ {
     tag "${meta.id}_${meta.sex}_${purity}"
 
-	conda (params.enable_conda ? "bioconda::r-sequenza=3.0.0" : null)
+    conda (params.enable_conda ? "bioconda::r-sequenza=3.0.0" : null)
     container 'sottorivalab_sequenza.sif'
 
     input:
@@ -19,18 +19,18 @@ process SEQUENZAUTILS_RSEQZ {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}_${purity}"
-	def seqz = seqz_bin.toString().replaceAll(/\.gz/,'') 
+    def seqz = seqz_bin.toString().replaceAll(/\.gz/,'') 
     """
     zcat $seqz_bin > $seqz
-	analyse_cn_sequenza.R ${seqz} ${prefix} ${meta.id} ${meta.sex} ${meta.ploidy} ${purity} ${meta.gamma}
+    analyse_cn_sequenza.R ${seqz} ${prefix} ${meta.id} ${meta.sex} ${meta.ploidy} ${purity} ${meta.gamma}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        sequenzautils: \$(echo \$(sequenza-utils 2>&1) | sed 's/^.*is version //; s/ .*\$//')
+        sequenza: 3.0.0
     END_VERSIONS
     """
 
-	stub:
+    stub:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}_${purity}"
     """

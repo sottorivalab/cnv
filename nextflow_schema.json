@@ -111,6 +111,26 @@
                     "type": "string",
                     "description": "Path to FASTA gzi index"
                 },
+                "ascat_alleles": {
+                    "type": "string",
+                    "description": "Path to downloaded ascat_alleles"
+                },
+                "ascat_genome": {
+                    "type": "string",
+                    "description": "genome version"
+                },
+                "ascat_loci": {
+                    "type": "string",
+                    "description": "Path to downloaded ascat_loci"
+                },
+                "ascat_loci_rt": {
+                    "type": "string",
+                    "description": "Path to downloaded ascat_loci_rt"
+                },
+                "ascat_loci_gc": {
+                    "type": "string",
+                    "description": "Path to downloaded ascat_loci_gc"
+                },
                 "gc_wiggle": {
                     "type": "string",
                     "format": "file-path",

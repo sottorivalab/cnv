@@ -7,12 +7,11 @@ process SEQUENZAUTILS_BAM2SEQZ {
         'biocontainers/sequenza-utils:3.0.0--py39he88f293_8' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
-    tuple val(meta_1), path(normalbam), path(normalbam_bai)
-    tuple val(meta_2), path(fasta)
-    tuple val(meta_3), path(fasta_fai)
-    tuple val(meta_4), path(fasta_gzi)
-	tuple val(meta_5), path(wigfile)
+    tuple val(meta), path(normalbam), path(normalbam_bai), path(bam), path(bai)
+    tuple val(meta_1), path(fasta)
+    tuple val(meta_2), path(fasta_fai)
+    tuple val(meta_3), path(fasta_gzi)
+	tuple val(meta_4), path(wigfile)
     each chromosome
 
     output:

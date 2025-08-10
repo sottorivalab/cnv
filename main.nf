@@ -6,19 +6,7 @@
     Github : https://github.com/sottorivalab/cnv
 ----------------------------------------------------------------------------------------
 */
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-include { CNV                     } from './workflows/cnv'
-include { PREPARE_GENOME          } from './subworkflows/local/prepare_genome'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_cnv_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_cnv_pipeline'
-include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_cnv_pipeline'
-
+nextflow.enable.dsl = 2
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     GENOME PARAMETER VALUES
@@ -36,6 +24,24 @@ params.fasta         = getGenomeAttribute('fasta')
 params.fasta_fai     = getGenomeAttribute('fasta_fai')
 params.gc_wiggle     = getGenomeAttribute('gc_wiggle')
 params.fasta_gzi     = getGenomeAttribute('fasta_gzi')
+params.bed_file      = getGenomeAttribute('bed_file')
+
+// Initialize value channels based on params, defined in the params.genomes[params.genome] scope
+println "DEBUG params.ascat_genome=${params.ascat_genome}"
+ascat_genome         = params.ascat_genome   ?:  Channel.empty()
+
+println "DEBUG ascat_genome=${ascat_genome}"
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+include { CNV                     } from './workflows/cnv'
+include { PREPARE_GENOME          } from './subworkflows/local/prepare_genome'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_cnv_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_cnv_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -66,29 +72,28 @@ workflow SOTTORIVALAB_CNV {
             .collect() :
         Channel.empty()
 
-    ascat_alleles = params.ascat_alleles ? Channel.fromPath(params.ascat_alleles).collect():Channel.empty()
-    ascat_genome = params.ascat_genome ? Channel.fromPath(params.ascat_genome).collect():Channel.empty()
-    ascat_loci = params.ascat_loci ? Channel.fromPath(params.ascat_loci).collect():Channel.empty()
-    ascat_loci_gc = params.ascat_loci_gc ? Channel.fromPath(params.ascat_loci_gc).collect():Channel.empty()
-    ascat_loci_rt = params.ascat_loci_rt ? Channel.fromPath(params.ascat_loci_rt).collect():Channel.empty()
 
     PREPARE_GENOME (
         fasta_ch,
-        ascat_alleles,
-        ascat_loci,
-        ascat_loci_gc,
-        ascat_loci_rt
+        params.ascat_alleles, 
+        params.ascat_loci,    
+        params.ascat_loci_gc, 
+        params.ascat_loci_rt 
     )
 
     // For ASCAT, extracted from zip or tar.gz files
-    ascat_alleles = PREPARE_GENOME.out.allele_files
-    ascat_loci    = PREPARE_GENOME.out.loci_files
-    ascat_loci_gc = PREPARE_GENOME.out.gc_file
-    ascat_loci_rt = PREPARE_GENOME.out.rt_file
+    allele_files           = PREPARE_GENOME.out.allele_files
+    loci_files             = PREPARE_GENOME.out.loci_files
+    gc_file                = PREPARE_GENOME.out.gc_file
+    rt_file                = PREPARE_GENOME.out.rt_file
 
     gc_wiggle_ch = params.gc_wiggle
         ? Channel.fromPath(params.gc_wiggle).map { it -> [ [id:'gc_wiggle'], it ] }.collect()
         : PREPARE_GENOME.out.gc_wiggle
+
+    bed_file_ch = params.bed_file
+        ? Channel.fromPath(params.bed_file, checkIfExists: true)
+        : PREPARE_GENOME.out.bed_file
 
     fasta_fai_ch = params.fasta_fai
         ? Channel.fromPath(params.fasta_fai).map{ it -> [ [id:'fai'], it ] }.collect()
@@ -107,7 +112,6 @@ workflow SOTTORIVALAB_CNV {
         else if (params.purity instanceof Number )
         { purity_ch = Channel.value(params.purity) }
 
-
     //
     // WORKFLOW: Run pipeline
     //
@@ -116,15 +120,15 @@ workflow SOTTORIVALAB_CNV {
         samplesheet,
         fasta_ch,
         fasta_fai_ch,
-		fasta_gzi_ch,
+        fasta_gzi_ch,
         gc_wiggle_ch,
         bin_size_ch,
         purity_ch,
-        allele_files,
-        chr_files,
+        allele_files, 
+        loci_files,    
+        bed_file_ch,
         gc_file,
-        loci_files,
-        rt_file
+        rt_file       
     )
     emit:
     multiqc_report = CNV.out.multiqc_report // channel: /path/to/multiqc_report.html
@@ -170,6 +174,27 @@ workflow {
         SOTTORIVALAB_CNV.out.multiqc_report
     )
 }
+
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    FUNCTIONS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+//
+// Get attribute from genome config file e.g. fasta
+//
+
+def getGenomeAttribute(attribute) {
+    if (params.genomes && params.genome && params.genomes.containsKey(params.genome)) {
+        if (params.genomes[ params.genome ].containsKey(attribute)) {
+            return params.genomes[ params.genome ][ attribute ]
+        }
+    }
+    return null
+}
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
