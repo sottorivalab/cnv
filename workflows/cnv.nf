@@ -24,18 +24,18 @@ include { UNZIP                  } from '../modules/nf-core/unzip'
 workflow CNV {
 
     take:
-    ch_samplesheet      // channel: samplesheet read in from --input      
-    ch_fasta            // channel from reference folder                  
-    ch_fasta_fai        // channel from reference folder                  
-    ch_fasta_gzi        // channel from reference folder                  
-    ch_wig              // channel from reference folder                  
-    ch_bin_size         // default or supplied  sequenza-utils bin size   
-    ch_purity           // purity default or supplied                     
-    ch_ascat_alleles                                                      
-    ch_ascat_loci                                                         
-	ch_bed_file                                                           
-    ch_ascat_loci_gc                                                      
-    ch_ascat_loci_rt                                                       
+    ch_samplesheet      // channel: samplesheet read in from --input
+    ch_fasta            // channel from reference folder
+    ch_fasta_fai        // channel from reference folder
+    ch_fasta_gzi        // channel from reference folder
+    ch_wig              // channel from reference folder
+    ch_bin_size         // default or supplied  sequenza-utils bin size
+    ch_purity           // purity default or supplied
+    ch_ascat_alleles
+    ch_ascat_loci
+	ch_bed_file
+    ch_ascat_loci_gc
+    ch_ascat_loci_rt
 
     main:
     ch_versions = Channel.empty()
@@ -70,8 +70,8 @@ workflow CNV {
 
     ch_input.bam
         .branch { meta, bam, bai ->
-            normal: meta.status == 'normal'
-            tumour: meta.status == 'tumour'
+            normal: meta.status == 0
+            tumour: meta.status == 1
         }
         .set { bam_ch }
 
@@ -79,8 +79,8 @@ workflow CNV {
         .map { meta, bam, bai -> tuple(meta.patient, [meta, bam, bai]) }
         .groupTuple()
         .flatMap { patient_id, samples ->
-            def normals = samples.findAll { it[0].status == 'normal' }
-            def tumours = samples.findAll { it[0].status == 'tumour' }
+            def normals = samples.findAll { it[0].status == 0 }
+            def tumours = samples.findAll { it[0].status == 1 }
 
             if (normals.isEmpty()) return []
 
@@ -158,16 +158,6 @@ workflow CNV {
         ch_purity
         )
 
-    // TODO: check versions for RSEQZ
-    // ch_versions = ch_versions.mix(SEQUENZAUTILS_RSEQZ.out.versions.first())
-    // ch_paired_tumour_normal.view{"ch_paired_tumour_normal: $it"}
-    // ch_ascat_alleles.view{"ascat alleles -> $it"}
-    // ch_ascat_loci.view{"ascat loci -> $it"}
-    // ch_bed_file.view{"bed file -> $it"}
-    // ch_fasta.view{"fasta -> $it"}
-    // ch_ascat_loci_gc.view{"ascat loci gc -> $it"}
-    // ch_ascat_loci_rt.view{"ascat loci rt -> $it"}
-    // println "params.ascat_genome -> ${params.ascat_genome}"
 
     ASCAT( ch_paired_tumour_normal,
            ch_ascat_alleles,
@@ -178,7 +168,7 @@ workflow CNV {
            ch_ascat_loci_rt
         )
 
-    //ch_versions = ch_versions.mix(ASCAT.out.versions.first())
+    ch_versions = ch_versions.mix(ASCAT.out.versions.first())
 
     //
     // Collate and save software versions

@@ -18,8 +18,8 @@
         "meta": ["sample"]
       },
       "status": {
-            "type": "string",
-            "enum": ["normal", "tumour"],
+            "type": "integer",
+            "enum": [0, 1],
             "meta": ["status"]
      },
       "bam": {
