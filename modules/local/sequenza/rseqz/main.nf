@@ -1,5 +1,6 @@
 process SEQUENZAUTILS_RSEQZ {
     tag "${meta.id}_${meta.sex}_${purity}"
+    label 'process_high'
 
     conda (params.enable_conda ? "bioconda::r-sequenza=3.0.0" : null)
     container 'sottorivalab_sequenza.sif'
