@@ -33,7 +33,7 @@ workflow CNV {
     ch_purity           // purity default or supplied
     ch_ascat_alleles
     ch_ascat_loci
-	ch_bed_file
+    ch_bed_file
     ch_ascat_loci_gc
     ch_ascat_loci_rt
 
@@ -55,8 +55,8 @@ workflow CNV {
                     .map{ it[1] }
                     .splitCsv(sep: "\t")
                     .map{ chr -> chr[0] }
-					.filter( ~/^chr\d+|^chr[X,Y]|^\d+|[X,Y]/ )
-					.collect()
+                    .filter( ~/^chr\d+|^chr[X,Y]|^\d+|[X,Y]/ )
+                    .collect()
     } else {
         chromosome_list = Channel.value(['chr1', 'chr2', 'chr3'])
     }
@@ -65,8 +65,8 @@ workflow CNV {
     // MODULE: BAM2SEQZ
     //
     //
-	// split into two channels normal and tumour for bam2seqz and ascat
-	//
+    // split into two channels normal and tumour for bam2seqz and ascat
+    //
 
     ch_input.bam
         .branch { meta, bam, bai ->
@@ -112,7 +112,7 @@ workflow CNV {
 
     ch_versions = ch_versions.mix(SEQUENZAUTILS_BAM2SEQZ.out.versions)
 
-	// collect bam2seqz output for binning
+    // collect bam2seqz output for binning
     SEQUENZAUTILS_BAM2SEQZ.out.seqz
         .groupTuple()
         .map { meta, files ->
@@ -130,7 +130,7 @@ workflow CNV {
             tuple(meta, sorted)
         }
         .set { merge_seqz_input }
-	//
+    //
     // MODULE: TABIX
     //
     // merge and index bam2seqz output
@@ -144,7 +144,7 @@ workflow CNV {
     //
     // binning of bam2seqz output default bin size is 50kb
 
-	SEQUENZAUTILS_BIN (
+    SEQUENZAUTILS_BIN (
         TABIX_TABIX.out.concat_seqz,
         ch_bin_size
     )
@@ -224,7 +224,7 @@ workflow CNV {
     )
 
     emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
-    versions       = ch_versions                 // channel: [ path(versions.yml) ]
+    versions       = ch_versions                      // channel: [ path(versions.yml) ]
 
 }
 
