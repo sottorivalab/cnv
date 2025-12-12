@@ -111,9 +111,20 @@ workflow CNV {
     )
 
     ch_versions = ch_versions.mix(SEQUENZAUTILS_BAM2SEQZ.out.versions)
+    //
+    // MODULE: BINNING
+    //
+    // binning of bam2seqz output default bin size is 50kb
+
+    SEQUENZAUTILS_BIN (
+        SEQUENZAUTILS_BAM2SEQZ.out.seqz,
+        ch_bin_size
+    )
+
+    ch_versions = ch_versions.mix(SEQUENZAUTILS_BIN.out.versions.first())
 
     // collect bam2seqz output for binning
-    SEQUENZAUTILS_BAM2SEQZ.out.seqz
+    SEQUENZAUTILS_BIN.out.seqz_bin
         .groupTuple()
         .map { meta, files ->
             def chr_order = (1..22).collect { it.toString() } + ['X', 'Y']
@@ -134,27 +145,14 @@ workflow CNV {
     // MODULE: TABIX
     //
     // merge and index bam2seqz output
-
     TABIX_TABIX(merge_seqz_input)
-
     ch_versions = ch_versions.mix(TABIX_TABIX.out.versions.first())
 
-    //
-    // MODULE: BINNING
-    //
-    // binning of bam2seqz output default bin size is 50kb
 
-    SEQUENZAUTILS_BIN (
-        TABIX_TABIX.out.concat_seqz,
-        ch_bin_size
-    )
-
-    ch_versions = ch_versions.mix(SEQUENZAUTILS_BIN.out.versions.first())
-
-    ch_seqz_final = ch_input.seqz.mix(SEQUENZAUTILS_BIN.out.seqz_bin)
+    ch_purity.view{"purity channel $it"}
 
     SEQUENZAUTILS_RSEQZ(
-        ch_seqz_final,
+        TABIX_TABIX.out.concat_seqz,
         ch_purity
         )
 

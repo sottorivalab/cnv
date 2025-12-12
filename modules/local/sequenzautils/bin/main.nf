@@ -8,7 +8,7 @@ process SEQUENZAUTILS_BIN {
         'biocontainers/sequenza-utils:3.0.0--py39h67e14b5_5' }"
 
     input:
-    tuple val(meta), path(concat_seqz), path(concat_seqz_tbi)
+    tuple val(meta), path(seqz)
     val bin_size
 
     output:
@@ -19,12 +19,12 @@ process SEQUENZAUTILS_BIN {
     task.ext.when == null || task.ext.when
 
     script:
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = seqz.getBaseName().replace('.gz','')
     """
     sequenza-utils \\
         seqz_binning \\
         -w $bin_size \\
-        --seqz $concat_seqz \\
+        --seqz $seqz \\
         -o ${prefix}_bin${bin_size}.seqz.gz
 
     cat <<-END_VERSIONS > versions.yml

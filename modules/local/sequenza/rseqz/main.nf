@@ -2,14 +2,13 @@ process SEQUENZAUTILS_RSEQZ {
     tag "${meta.id}_${meta.sex}_${purity}"
     label 'process_high'
 
-    
     conda (params.enable_conda ? "bioconda::r-sequenza=3.0.0" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/r-sequenza%3A3.0.0--r42h3342da4_5' :
-        'biocontainers/r-sequenza%3A3.0.0--r42h3342da4_5' }"
+        'https://depot.galaxyproject.org/singularity/r-sequenza:2.1.2--r351h6115d3f_2' :
+        'biocontainers/r-sequenza%2.1.2--r351h6115d3f_2' }"
 
     input:
-    tuple val(meta), path(seqz_bin)// , path(filtered_seqz_bin)
+    tuple val(meta), path(seqz_bin), path(seqz_tbi)
     each purity
 
 
@@ -23,16 +22,7 @@ process SEQUENZAUTILS_RSEQZ {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}_${purity}"
-    def seqz = seqz_bin.toString().replaceAll(/\.gz/,'') 
-    """
-    zcat $seqz_bin > $seqz
-    analyse_cn_sequenza.R ${seqz} ${prefix} ${meta.id} ${meta.sex} ${meta.ploidy} ${purity} ${meta.gamma}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        sequenza: 3.0.0
-    END_VERSIONS
-    """
+    template "cn_analysis.sh"
 
     stub:
     def args = task.ext.args ?: ''
