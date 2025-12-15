@@ -78,7 +78,7 @@ workflow PIPELINE_INITIALISATION {
                meta.id     = meta.patient + "_" + meta.sample
                meta.sex    = sex ?: "XX"
                meta.ploidy = ploidy ?: 7
-               meta.gamma  = gamma  ?: 20
+               meta.gamma  = gamma  ?: 280
 
             if (seqz) {
                 return [meta, seqz]
