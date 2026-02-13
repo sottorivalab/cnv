@@ -82,10 +82,10 @@ workflow SOTTORIVALAB_CNV {
     )
 
     // For ASCAT, extracted from zip or tar.gz files
-    allele_files           = PREPARE_GENOME.out.allele_files
-    loci_files             = PREPARE_GENOME.out.loci_files
-    gc_file                = PREPARE_GENOME.out.gc_file
-    rt_file                = PREPARE_GENOME.out.rt_file
+    allele_files           = PREPARE_GENOME.out.allele_files.collect()
+    loci_files             = PREPARE_GENOME.out.loci_files.collect()
+    gc_file                = PREPARE_GENOME.out.gc_file.collect()
+    rt_file                = PREPARE_GENOME.out.rt_file.collect() 
 
     gc_wiggle_ch = params.gc_wiggle
         ? Channel.fromPath(params.gc_wiggle).map { it -> [ [id:'gc_wiggle'], it ] }.collect()

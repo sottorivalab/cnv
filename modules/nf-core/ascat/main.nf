@@ -1,5 +1,6 @@
 process ASCAT {
-    tag "$meta.id"
+    tag "${meta.id}"
+    debug true  // ADD THIS LINE
     label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
@@ -7,14 +8,14 @@ process ASCAT {
         'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/4c/4cf02c7911ee5e974ce7db978810770efbd8d872ff5ab3462d2a11bcf022fab5/data':
         'community.wave.seqera.io/library/ascat_cancerit-allelecount:c3e8749fa4af0e99' }"
 
-	input:
+    input:
     tuple val(meta), path(input_normal), path(index_normal), path(input_tumour), path(index_tumour)
-    path(allele_files)
-    path(loci_files)
-    path(bed_file)  // optional
-    tuple val(meta2), path(fasta)     // optional
-    path(gc_file)   // optional
-    path(rt_file)   // optional
+    each(allele_files)
+    each(loci_files)
+    each(bed_file)  // optional
+    each(fasta)     // optional
+    each(gc_file)   // optional
+    each(rt_file)   // optional
 
     output:
     tuple val(meta), path("*alleleFrequencies_chr*.txt"), emit: allelefreqs
@@ -31,11 +32,21 @@ process ASCAT {
     task.ext.when == null || task.ext.when
 
     script:
+    println "========================================="
+    println "ASCAT SCRIPT BLOCK EXECUTING"
+    println "Sample ID: ${meta.id}"
+    println "Patient: ${meta.patient}"
+    println "Sex: ${meta.sex}"
+    println "Normal BAM: ${input_normal}"
+    println "Tumor BAM: ${input_tumour}"
+    println "========================================="
+    
+
     def args           = task.ext.args        ?: ''
     def prefix         = task.ext.prefix      ?: "${meta.id}"
     def gender         = args.gender          ?  "${args.gender}"        : "NULL"
     def genomeVersion  = args.genomeVersion   ?  "${args.genomeVersion}" : "NULL"
-	def purity         = args.purity          ?  "${args.purity}"        : "NULL"
+    def purity         = args.purity          ?  "${args.purity}"        : "NULL"
     def ploidy         = args.ploidy          ?  "${args.ploidy}"        : "NULL"
     def gc_input       = gc_file              ?  "${gc_file}"            : "NULL"
     def rt_input       = rt_file              ?  "${rt_file}"            : "NULL"
@@ -63,11 +74,13 @@ process ASCAT {
     library(RColorBrewer)
     library(ASCAT)
     options(bitmapType='cairo')
+    print(paste("input normal","${input_normal}"))
+    print(paste("input tumour","${input_tumour}"))
 
     if(dir.exists("${allele_files}")) {
         # expected production use of a directory
         allele_path   = normalizePath("${allele_files}")
-        allele_prefix = paste0(allele_path, "/", "${allele_files}", "_chr")
+        allele_prefix = paste0(allele_path, "/", basename(allele_path), "_chr")
     } else if(file.exists("${allele_files}")) {
         # expected testing use of a single file
         allele_path   = basename(normalizePath("${allele_files}"))
@@ -83,7 +96,7 @@ process ASCAT {
     if(dir.exists("${loci_files}")) {
         # expected production use of a directory
         loci_path   = normalizePath("${loci_files}")
-        loci_prefix = paste0(loci_path, "/", "${loci_files}", "_chr")
+        loci_prefix = paste0(loci_path, "/", basename(loci_path), "_chr")
     } else if(file.exists("${loci_files}")) {
         # expected testing use of a single file
         loci_path   = basename(normalizePath("${loci_files}"))
@@ -166,7 +179,7 @@ process ASCAT {
             ascat.plotRawData(ascat.bc, img.prefix = paste0("${prefix}", ".after_correction_gc_rt."))
         }
         else {
-            ascat.bc = ascat.correctLogR(ascat.bc, GCcontentfile = gc_input, replictimingfile = ${rt_input})
+            ascat.bc = ascat.correctLogR(ascat.bc, GCcontentfile = gc_input, replictimingfile = NULL )
             # Plot raw data after correction
             ascat.plotRawData(ascat.bc, img.prefix = paste0("${prefix}", ".after_correction_gc."))
         }

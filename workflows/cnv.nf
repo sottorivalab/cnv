@@ -99,10 +99,14 @@ workflow CNV {
                 tuple(new_meta, bam_n, bai_n, bam_t, bai_t)
             }
         }
-       .set { ch_paired_tumour_normal }
+        .multiMap { meta, bam_n, bai_n, bam_t, bai_t ->
+            for_sequenza: tuple(meta, bam_n, bai_n, bam_t, bai_t)
+            for_ascat: tuple(meta, bam_n, bai_n, bam_t, bai_t)
+        }
+       .set { paired_channels }
 
     SEQUENZAUTILS_BAM2SEQZ (
-        ch_paired_tumour_normal,
+        paired_channels.for_sequenza,
         ch_fasta,
         ch_fasta_fai,
         ch_fasta_gzi,
@@ -148,20 +152,17 @@ workflow CNV {
     TABIX_TABIX(merge_seqz_input)
     ch_versions = ch_versions.mix(TABIX_TABIX.out.versions.first())
 
-
-    ch_purity.view{"purity channel $it"}
-
     SEQUENZAUTILS_RSEQZ(
         TABIX_TABIX.out.concat_seqz,
         ch_purity
         )
+    paired_channels.for_ascat.view{ "RIGHT BEFORE ASCAT: ${it[0].id}" }
 
-
-    ASCAT( ch_paired_tumour_normal,
+    ASCAT( paired_channels.for_ascat,
            ch_ascat_alleles,
            ch_ascat_loci,
            ch_bed_file,
-           ch_fasta,
+           ch_fasta.map{ meta, fasta -> fasta },
            ch_ascat_loci_gc,
            ch_ascat_loci_rt
         )
