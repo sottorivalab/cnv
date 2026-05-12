@@ -12,7 +12,7 @@ include { SEQUENZAUTILS_BAM2SEQZ } from '../modules/nf-core/sequenzautils/bam2se
 include { TABIX_TABIX            } from '../modules/nf-core/tabix/tabix/'
 include { SEQUENZAUTILS_BIN      } from '../modules/local/sequenzautils/bin/'
 include { SEQUENZAUTILS_RSEQZ    } from '../modules/local/sequenza/rseqz/'
-include { GAWK                   } from '../modules/nf-core/gawk/'
+include { GAWK                   } from '../modules/local/gawk/'
 include { ASCAT                  } from '../modules/nf-core/ascat'
 include { UNZIP                  } from '../modules/nf-core/unzip'
 /*
