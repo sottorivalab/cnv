@@ -9,12 +9,12 @@ process ASCAT {
 
     input:
     tuple val(meta), path(input_normal), path(index_normal), path(input_tumour), path(index_tumour)
-    each(allele_files)
-    each(loci_files)
-    each(bed_file)  // optional
-    each(fasta)     // optional
-    each(gc_file)   // optional
-    each(rt_file)   // optional
+    each path(allele_files)
+    each path(loci_files)
+    each path(bed_file)  // optional
+    each path(fasta)     // optional
+    each path(gc_file)   // optional
+    each path(rt_file)   // optional
 
     output:
     tuple val(meta), path("*alleleFrequencies_chr*.txt"), emit: allelefreqs
