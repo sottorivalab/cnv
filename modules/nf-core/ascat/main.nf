@@ -25,7 +25,7 @@ process ASCAT {
     tuple val(meta), path("*png")                       , emit: png
     tuple val(meta), path("*purityploidy.txt")          , emit: purityploidy
     tuple val(meta), path("*segments.txt")              , emit: segments
-    path "versions.yml"                                 , emit: versions
+    path "versions.yml"                                 , emit: versions, topic: 'versions'
 
     when:
     task.ext.when == null || task.ext.when

@@ -13,7 +13,7 @@ process SEQUENZAUTILS_BIN {
 
     output:
     tuple val(meta), path("*_bin${bin_size}.seqz.gz"), emit: seqz_bin
-    path "versions.yml"          , emit: versions
+    path "versions.yml"          , emit: versions, topic: 'versions'
 
     when:
     task.ext.when == null || task.ext.when

@@ -12,7 +12,7 @@ process TABIX_TABIX {
 
     output:
     tuple val(meta), path("*concat.seqz.gz"), path("*concat.seqz.gz.tbi"), emit: concat_seqz
-    path  "versions.yml"          , emit: versions
+    path  "versions.yml"          , emit: versions, topic: 'versions'
 
     when:
     task.ext.when == null || task.ext.when

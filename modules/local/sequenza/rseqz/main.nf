@@ -14,7 +14,7 @@ process SEQUENZAUTILS_RSEQZ {
 
     output:
     tuple val(meta), path("${meta.id}_${purity}"), emit: rseqz
-    path "versions.yml"          , emit: versions
+    path "versions.yml"          , emit: versions, topic: 'versions'
 
     when:
     task.ext.when == null || task.ext.when

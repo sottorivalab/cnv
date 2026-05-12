@@ -38,7 +38,7 @@ workflow CNV {
     ch_ascat_loci_rt
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.topic('versions')
     ch_multiqc_files = Channel.empty()
 
     // Branching logic based on presence of seqz
@@ -114,7 +114,6 @@ workflow CNV {
         chromosome_list
     )
 
-    ch_versions = ch_versions.mix(SEQUENZAUTILS_BAM2SEQZ.out.versions)
     //
     // MODULE: BINNING
     //
@@ -124,8 +123,6 @@ workflow CNV {
         SEQUENZAUTILS_BAM2SEQZ.out.seqz,
         ch_bin_size
     )
-
-    ch_versions = ch_versions.mix(SEQUENZAUTILS_BIN.out.versions.first())
 
     // collect bam2seqz output for binning
     SEQUENZAUTILS_BIN.out.seqz_bin
@@ -140,7 +137,7 @@ workflow CNV {
             }
 
             def canonical = files.findAll { it.getName() =~ /chr(\d+|X|Y)/ }
-            def sorted = canonical.sort { a, b -> chr_index(a) <=> chr_index(b) }
+            def sorted = canonical.sort { a, b -> chr_index.call(a) <=> chr_index.call(b) }
 
             tuple(meta, sorted)
         }
@@ -150,7 +147,6 @@ workflow CNV {
     //
     // merge and index bam2seqz output
     TABIX_TABIX(merge_seqz_input)
-    ch_versions = ch_versions.mix(TABIX_TABIX.out.versions.first())
 
     SEQUENZAUTILS_RSEQZ(
         TABIX_TABIX.out.concat_seqz,
@@ -166,8 +162,6 @@ workflow CNV {
            ch_ascat_loci_gc,
            ch_ascat_loci_rt
         )
-
-    ch_versions = ch_versions.mix(ASCAT.out.versions.first())
 
     //
     // Collate and save software versions

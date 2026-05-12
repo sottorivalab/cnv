@@ -26,12 +26,6 @@ params.gc_wiggle     = getGenomeAttribute('gc_wiggle')
 params.fasta_gzi     = getGenomeAttribute('fasta_gzi')
 params.bed_file      = getGenomeAttribute('bed_file')
 
-// Initialize value channels based on params, defined in the params.genomes[params.genome] scope
-println "DEBUG params.ascat_genome=${params.ascat_genome}"
-ascat_genome         = params.ascat_genome   ?:  Channel.empty()
-
-println "DEBUG ascat_genome=${ascat_genome}"
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
@@ -58,7 +52,6 @@ workflow SOTTORIVALAB_CNV {
     samplesheet // channel: samplesheet read in from --input
 
     main:
-    versions = Channel.empty()
     //
     // SUBWORKFLOW: Prepare genome if needed
     //

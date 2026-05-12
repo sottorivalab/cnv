@@ -12,7 +12,7 @@ process UNZIP {
 
     output:
     tuple val(meta), path("${prefix}/"), emit: unzipped_archive
-    path "versions.yml"                , emit: versions
+    path "versions.yml"                , emit: versions, topic: 'versions'
 
     when:
     task.ext.when == null || task.ext.when
@@ -47,4 +47,3 @@ process UNZIP {
     END_VERSIONS
     """
 }
-
