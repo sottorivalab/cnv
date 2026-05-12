@@ -1,6 +1,5 @@
 process ASCAT {
     tag "${meta.id}"
-    debug true  // ADD THIS LINE
     label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
@@ -32,16 +31,6 @@ process ASCAT {
     task.ext.when == null || task.ext.when
 
     script:
-    println "========================================="
-    println "ASCAT SCRIPT BLOCK EXECUTING"
-    println "Sample ID: ${meta.id}"
-    println "Patient: ${meta.patient}"
-    println "Sex: ${meta.sex}"
-    println "Normal BAM: ${input_normal}"
-    println "Tumor BAM: ${input_tumour}"
-    println "========================================="
-    
-
     def args           = task.ext.args        ?: ''
     def prefix         = task.ext.prefix      ?: "${meta.id}"
     def gender         = args.gender          ?  "${args.gender}"        : "NULL"
