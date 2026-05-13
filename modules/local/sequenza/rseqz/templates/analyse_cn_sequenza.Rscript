@@ -2,14 +2,15 @@
 
 if (!require(sequenza)) stop("Package 'sequenza' missing\n.")
 
-args <- commandArgs(TRUE)
-input         <- args[1]
-output_dir    <- args[2]
-output_prefix <- args[3]
-sex           <- args[4]
-ploidy        <- as.integer(args[5])
-ccf           <- as.numeric(args[6])
-gamma_val     <- as.integer(args[7])
+input         <- "${seqz_bin}"
+output_dir    <- "${prefix}"
+output_prefix <- "${meta.id}"
+sex           <- "${meta.sex}"
+ploidy        <- as.integer("${meta.ploidy}")
+ccf           <- as.numeric("${purity}")
+gamma_val     <- as.integer("${meta.gamma}")
+
+dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
 cat(paste("input:", input, "\n"))
 cat(paste("output dir:", output_dir, "\n"))
@@ -78,14 +79,14 @@ sequenzaAnalysis <- function(input,
 
   cat("- Estimating sex directly from seqz coverage\n")
   cat("- Estimating sex using chromosomes 7, 8, and X\n")
-  
+
   cols <- c("chromosome", "depth.normal", "depth.tumor")
-  
+
   cmd <- paste(
     "zcat", shQuote(input),
     "| awk 'NR==1 || $1==\"chr7\" || $1==\"chr8\" || $1==\"chrX\" || $1==\"chrY\"'"
   )
-  
+
   seqz_data <- read.table(
     pipe(cmd),
     header = TRUE,
@@ -93,23 +94,23 @@ sequenzaAnalysis <- function(input,
     comment.char = "",
     stringsAsFactors = FALSE
   )[, cols]
-  
+
   mean_depth <- aggregate(seqz_data$depth.tumor,
                           by = list(seqz_data$chromosome),
                           FUN = mean, na.rm = TRUE)
   colnames(mean_depth) <- c("chr", "mean_depth")
-  
+
   auto_depth <- mean(mean_depth$mean_depth[mean_depth$chr %in% c("chr7", "chr8")], na.rm = TRUE)
   x_depth    <- mean_depth$mean_depth[mean_depth$chr == "chrX"]
   y_depth    <- mean_depth$mean_depth[mean_depth$chr == "chrY"]
-  
+
   # Handle missing values
   x_depth <- ifelse(length(x_depth) == 0 || is.na(x_depth), 0, x_depth)
   y_depth <- ifelse(length(y_depth) == 0 || is.na(y_depth), 0, y_depth)
-  
+
   x_ratio <- x_depth / auto_depth
   y_ratio <- y_depth / auto_depth
-  
+
   if (!is.na(y_ratio) && !is.na(x_ratio) && y_ratio > 0.05 && x_ratio < 0.7) {
       sex_est <- "male"
       is_female <- FALSE
@@ -117,12 +118,12 @@ sequenzaAnalysis <- function(input,
       sex_est <- "female"
       is_female <- TRUE
   }
-  
+
   cat(sprintf("  chr7–8 mean depth: %.3f, chrX: %.3f, chrY: %.3f\n",
               auto_depth, x_depth, y_depth))
   cat(sprintf("  chrX ratio: %.3f, chrY ratio: %.3f, estimated sex: %s\n",
               x_ratio, y_ratio, sex_est))
-  
+
   cat("- Loading data\n")
   modDat <- sequenza.extract(
     input,
@@ -172,3 +173,7 @@ sequenzaAnalysis <- function(input,
 # Run the analysis
 do.call(sequenzaAnalysis, params_list)
 cat("- Finished successfully\n")
+writeLines(c(
+  "\"${task.process}\":",
+  "    sequenza: 2.1.1"
+), "versions.yml")

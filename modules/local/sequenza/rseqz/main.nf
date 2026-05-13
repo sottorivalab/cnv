@@ -22,17 +22,17 @@ process SEQUENZAUTILS_RSEQZ {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}_${purity}"
-    template "cn_analysis.sh"
+    template 'analyse_cn_sequenza.Rscript'
 
     stub:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}_${purity}"
     """
-    echo "analyse_cn_sequenza.R ${seqz_bin} ${seqz_bin} ${prefix} ${meta.id} ${meta.gender} ${meta.ploidy} ${purity} ${meta.gamma}"
+    echo "analyse_cn_sequenza.R ${seqz_bin} ${seqz_bin} ${prefix} ${meta.id} ${meta.sex} ${meta.ploidy} ${purity} ${meta.gamma}"
     mkdir ${prefix}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        sequenzautils: 3.0.0
+        sequenza: 2.1.1
     END_VERSIONS
     """
 }
