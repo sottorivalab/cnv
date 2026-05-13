@@ -75,7 +75,7 @@ sequenzaAnalysis <- function(input,
   cat(sprintf("- Starting analysis for %s\n", input))
   cat("- Calculating GC stats\n")
   gc_stats <- gc.sample.stats(input)
-  chr_list <- gc_stats$file.metrics$chr
+  chr_list <- gc_stats\$file.metrics\$chr
 
   cat("- Estimating sex directly from seqz coverage\n")
   cat("- Estimating sex using chromosomes 7, 8, and X\n")
@@ -84,7 +84,7 @@ sequenzaAnalysis <- function(input,
 
   cmd <- paste(
     "zcat", shQuote(input),
-    "| awk 'NR==1 || $1==\"chr7\" || $1==\"chr8\" || $1==\"chrX\" || $1==\"chrY\"'"
+    "| awk 'NR==1 || \$1==\"chr7\" || \$1==\"chr8\" || \$1==\"chrX\" || \$1==\"chrY\"'"
   )
 
   seqz_data <- read.table(
@@ -95,14 +95,14 @@ sequenzaAnalysis <- function(input,
     stringsAsFactors = FALSE
   )[, cols]
 
-  mean_depth <- aggregate(seqz_data$depth.tumor,
-                          by = list(seqz_data$chromosome),
+  mean_depth <- aggregate(seqz_data\$depth.tumor,
+                          by = list(seqz_data\$chromosome),
                           FUN = mean, na.rm = TRUE)
   colnames(mean_depth) <- c("chr", "mean_depth")
 
-  auto_depth <- mean(mean_depth$mean_depth[mean_depth$chr %in% c("chr7", "chr8")], na.rm = TRUE)
-  x_depth    <- mean_depth$mean_depth[mean_depth$chr == "chrX"]
-  y_depth    <- mean_depth$mean_depth[mean_depth$chr == "chrY"]
+  auto_depth <- mean(mean_depth\$mean_depth[mean_depth\$chr %in% c("chr7", "chr8")], na.rm = TRUE)
+  x_depth    <- mean_depth\$mean_depth[mean_depth\$chr == "chrX"]
+  y_depth    <- mean_depth\$mean_depth[mean_depth\$chr == "chrY"]
 
   # Handle missing values
   x_depth <- ifelse(length(x_depth) == 0 || is.na(x_depth), 0, x_depth)
