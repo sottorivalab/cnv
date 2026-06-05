@@ -4,8 +4,8 @@ process BATTENBERG {
 
     conda (params.containsKey('enable_conda') && params.enable_conda ? "bioconda::battenberg" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker://ghcr.io/chelauk/battenberg-beagle:latest' :
-        'ghcr.io/chelauk/battenberg-beagle:latest' }"
+        'docker://ghcr.io/chelauk/battenberg-beagle:v0.2' :
+        'ghcr.io/chelauk/battenberg-beagle:v0.2' }"
 
     input:
     tuple val(meta), path(normal_bam), path(normal_bai), path(tumour_bam), path(tumour_bai)
