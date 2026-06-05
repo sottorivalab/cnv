@@ -98,8 +98,7 @@
                 },
                 "battenberg_g1000_loci": {
                     "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory containing Battenberg 1000G loci files."
+                    "description": "Prefix or glob for Battenberg 1000G loci files, for example /refs/1000G_loci/..._chr."
                 },
                 "battenberg_problem_loci": {
                     "type": "string",
@@ -108,18 +107,15 @@
                 },
                 "battenberg_gc_correction": {
                     "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory containing Battenberg GC correction files."
+                    "description": "Prefix or glob for Battenberg GC correction files, for example /refs/GC_correction/1000G_GC_chr."
                 },
                 "battenberg_rt_correction": {
                     "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory containing Battenberg replication timing correction files."
+                    "description": "Prefix or glob for Battenberg replication timing correction files, for example /refs/RT_correction/1000G_RT_chr."
                 },
                 "battenberg_g1000_alleles": {
                     "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory containing Battenberg 1000G allele index files."
+                    "description": "Prefix or glob for Battenberg 1000G allele index files, for example /refs/1000G_loci/..._allele_index_chr."
                 },
                 "battenberg_beagle_jar": {
                     "type": "string",
@@ -128,13 +124,11 @@
                 },
                 "battenberg_beagle_ref": {
                     "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory containing Beagle reference VCF files."
+                    "description": "Prefix or glob for Beagle reference VCF files, for example /refs/beagle/chr."
                 },
                 "battenberg_beagle_plink": {
                     "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory containing Beagle PLINK map files."
+                    "description": "Prefix or glob for Beagle PLINK map files, for example /refs/beagle/plink.chr."
                 }
             }
         },

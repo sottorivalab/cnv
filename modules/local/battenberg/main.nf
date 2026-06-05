@@ -10,14 +10,14 @@ process BATTENBERG {
     input:
     tuple val(meta), path(normal_bam), path(normal_bai), path(tumour_bam), path(tumour_bai)
     path impute_info
-    path g1000_loci
+    path g1000_loci, stageAs: 'g1000_loci/*'
     path problem_loci
-    path gc_correction
-    path rt_correction
-    path g1000_alleles
+    path gc_correction, stageAs: 'gc_correction/*'
+    path rt_correction, stageAs: 'rt_correction/*'
+    path g1000_alleles, stageAs: 'g1000_alleles/*'
     path beagle_jar
-    path beagle_ref
-    path beagle_plink
+    path beagle_ref, stageAs: 'beagle_ref/*'
+    path beagle_plink, stageAs: 'beagle_plink/*'
 
     output:
     tuple val(meta), path("${prefix}"), emit: results

@@ -110,7 +110,7 @@ workflow SOTTORIVALAB_CNV {
         : Channel.empty()
 
     battenberg_g1000_loci_ch = params.run_battenberg
-        ? Channel.value(file(params.battenberg_g1000_loci, checkIfExists: true))
+        ? Channel.fromPath(battenbergPrefixGlob(params.battenberg_g1000_loci), checkIfExists: true).collect()
         : Channel.empty()
 
     battenberg_problem_loci_ch = params.run_battenberg
@@ -118,15 +118,15 @@ workflow SOTTORIVALAB_CNV {
         : Channel.empty()
 
     battenberg_gc_correction_ch = params.run_battenberg
-        ? Channel.value(file(params.battenberg_gc_correction, checkIfExists: true))
+        ? Channel.fromPath(battenbergPrefixGlob(params.battenberg_gc_correction), checkIfExists: true).collect()
         : Channel.empty()
 
     battenberg_rt_correction_ch = params.run_battenberg
-        ? Channel.value(file(params.battenberg_rt_correction, checkIfExists: true))
+        ? Channel.fromPath(battenbergPrefixGlob(params.battenberg_rt_correction), checkIfExists: true).collect()
         : Channel.empty()
 
     battenberg_g1000_alleles_ch = params.run_battenberg
-        ? Channel.value(file(params.battenberg_g1000_alleles, checkIfExists: true))
+        ? Channel.fromPath(battenbergPrefixGlob(params.battenberg_g1000_alleles), checkIfExists: true).collect()
         : Channel.empty()
 
     battenberg_beagle_jar_ch = params.run_battenberg
@@ -134,11 +134,11 @@ workflow SOTTORIVALAB_CNV {
         : Channel.empty()
 
     battenberg_beagle_ref_ch = params.run_battenberg
-        ? Channel.value(file(params.battenberg_beagle_ref, checkIfExists: true))
+        ? Channel.fromPath(battenbergPrefixGlob(params.battenberg_beagle_ref), checkIfExists: true).collect()
         : Channel.empty()
 
     battenberg_beagle_plink_ch = params.run_battenberg
-        ? Channel.value(file(params.battenberg_beagle_plink, checkIfExists: true))
+        ? Channel.fromPath(battenbergPrefixGlob(params.battenberg_beagle_plink), checkIfExists: true).collect()
         : Channel.empty()
 
     bin_size_ch = params.bin_size
@@ -240,6 +240,15 @@ def getGenomeAttribute(attribute) {
         }
     }
     return null
+}
+
+def battenbergPrefixGlob(prefix) {
+    if (!prefix) {
+        return null
+    }
+
+    def value = prefix.toString()
+    return value ==~ /.*[\*\?\[\]\{\}].*/ ? value : "${value}*"
 }
 
 
