@@ -13,6 +13,7 @@ include { TABIX_TABIX            } from '../modules/nf-core/tabix/tabix/'
 include { SEQUENZAUTILS_BIN      } from '../modules/local/sequenzautils/bin/'
 include { SEQUENZAUTILS_RSEQZ    } from '../modules/local/sequenza/rseqz/'
 include { GAWK                   } from '../modules/local/gawk/'
+include { BATTENBERG             } from '../modules/local/battenberg'
 include { ASCAT                  } from '../modules/nf-core/ascat'
 include { UNZIP                  } from '../modules/nf-core/unzip'
 /*
@@ -36,6 +37,15 @@ workflow CNV {
     ch_bed_file
     ch_ascat_loci_gc
     ch_ascat_loci_rt
+    ch_battenberg_impute_info
+    ch_battenberg_g1000_loci
+    ch_battenberg_problem_loci
+    ch_battenberg_gc_correction
+    ch_battenberg_rt_correction
+    ch_battenberg_g1000_alleles
+    ch_battenberg_beagle_jar
+    ch_battenberg_beagle_ref
+    ch_battenberg_beagle_plink
 
     main:
     ch_versions = channel.topic('versions')
@@ -94,7 +104,14 @@ workflow CNV {
                 def bam_t  = tumour[1]
                 def bai_t  = tumour[2]
 
-                def new_meta = [ patient: patient_id, id: meta_t.id, sex: meta_t.sex, ploidy: meta_t.ploidy, gamma: meta_t.gamma ]
+                def new_meta = [
+                    patient: patient_id,
+                    id: meta_t.id,
+                    normal_id: meta_n.id,
+                    sex: meta_t.sex,
+                    ploidy: meta_t.ploidy,
+                    gamma: meta_t.gamma
+                ]
 
                 tuple(new_meta, bam_n, bai_n, bam_t, bai_t)
             }
@@ -162,6 +179,21 @@ workflow CNV {
            ch_ascat_loci_gc,
            ch_ascat_loci_rt
         )
+
+    if (params.run_battenberg) {
+        BATTENBERG(
+            paired_channels.for_ascat,
+            ch_battenberg_impute_info,
+            ch_battenberg_g1000_loci,
+            ch_battenberg_problem_loci,
+            ch_battenberg_gc_correction,
+            ch_battenberg_rt_correction,
+            ch_battenberg_g1000_alleles,
+            ch_battenberg_beagle_jar,
+            ch_battenberg_beagle_ref,
+            ch_battenberg_beagle_plink
+        )
+    }
 
     //
     // Collate and save software versions

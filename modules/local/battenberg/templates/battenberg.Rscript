@@ -1,0 +1,144 @@
+#!/usr/bin/env Rscript
+
+library(Battenberg)
+
+resolve_file <- function(path, label) {
+  path <- normalizePath(path, mustWork = TRUE)
+  if (dir.exists(path)) {
+    files <- list.files(path, recursive = TRUE, full.names = TRUE)
+    files <- files[file.exists(files) & !dir.exists(files)]
+    if (length(files) != 1) {
+      stop(label, " must be a file or a directory containing exactly one file")
+    }
+    return(normalizePath(files[[1]], mustWork = TRUE))
+  }
+  path
+}
+
+resolve_chr_prefix <- function(path, label, include_pattern) {
+  path <- normalizePath(path, mustWork = TRUE)
+  files <- if (dir.exists(path)) {
+    list.files(path, pattern = include_pattern, recursive = TRUE, full.names = TRUE)
+  } else {
+    path
+  }
+
+  files <- files[file.exists(files) & !dir.exists(files)]
+  if (length(files) == 0) {
+    stop("No ", label, " files found matching pattern: ", include_pattern)
+  }
+
+  prefix <- sub("(chr)([0-9XYM]+).*", "\\\\1", normalizePath(files[[1]], mustWork = TRUE))
+  if (identical(prefix, normalizePath(files[[1]], mustWork = TRUE))) {
+    stop("Could not infer chromosome prefix for ", label, " from: ", files[[1]])
+  }
+  prefix
+}
+
+resolve_beagle_template <- function(path, label, include_pattern) {
+  path <- normalizePath(path, mustWork = TRUE)
+  files <- if (dir.exists(path)) {
+    list.files(path, pattern = include_pattern, recursive = TRUE, full.names = TRUE)
+  } else {
+    path
+  }
+
+  files <- files[file.exists(files) & !dir.exists(files)]
+  if (length(files) == 0) {
+    stop("No ", label, " files found matching pattern: ", include_pattern)
+  }
+
+  template <- sub("chr[0-9XYM]+", "chrCHROMNAME", normalizePath(files[[1]], mustWork = TRUE))
+  if (identical(template, normalizePath(files[[1]], mustWork = TRUE))) {
+    stop("Could not infer Beagle CHROMNAME template for ", label, " from: ", files[[1]])
+  }
+  template
+}
+
+tumour_name <- "${tumour_name}"
+normal_name <- "${normal_name}"
+tumour_bam <- normalizePath("${tumour_bam}", mustWork = TRUE)
+normal_bam <- normalizePath("${normal_bam}", mustWork = TRUE)
+output_dir <- "${prefix}"
+
+impute_info_file <- resolve_file("${impute_info}", "impute_info")
+problem_loci <- resolve_file("${problem_loci}", "problem_loci")
+g1000_prefix <- resolve_chr_prefix("${g1000_loci}", "1000G loci", "loci.*chr")
+gc_correct_prefix <- resolve_chr_prefix("${gc_correction}", "GC correction", "GC.*chr")
+replic_correct_prefix <- resolve_chr_prefix("${rt_correction}", "replication timing correction", "RT.*chr")
+g1000_alleles_prefix <- resolve_chr_prefix("${g1000_alleles}", "1000G allele index", "allele.*index.*chr")
+beagle_jar <- resolve_file("${beagle_jar}", "beagle_jar")
+beagle_ref_template <- resolve_beagle_template("${beagle_ref}", "Beagle reference", "vcf[.]gz")
+beagle_plink_template <- resolve_beagle_template("${beagle_plink}", "Beagle PLINK map", "[.]map")
+
+dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
+old_wd <- getwd()
+setwd(output_dir)
+on.exit(setwd(old_wd), add = TRUE)
+
+result <- battenberg(
+  samplename = tumour_name,
+  normalname = normal_name,
+  sample_data_file = tumour_bam,
+  normal_data_file = normal_bam,
+  imputeinfofile = impute_info_file,
+  g1000prefix = g1000_prefix,
+  problemloci = problem_loci,
+  gccorrectprefix = gc_correct_prefix,
+  repliccorrectprefix = replic_correct_prefix,
+  g1000allelesprefix = g1000_alleles_prefix,
+  ismale = ${is_male},
+  data_type = "${data_type}",
+  impute_exe = "${impute_exe}",
+  allelecounter_exe = "${allelecounter_exe}",
+  nthreads = ${task.cpus},
+  platform_gamma = ${platform_gamma},
+  phasing_gamma = ${phasing_gamma},
+  segmentation_gamma = ${segmentation_gamma},
+  segmentation_kmin = ${segmentation_kmin},
+  phasing_kmin = ${phasing_kmin},
+  clonality_dist_metric = ${clonality_dist_metric},
+  ascat_dist_metric = ${ascat_dist_metric},
+  min_ploidy = ${min_ploidy},
+  max_ploidy = ${max_ploidy},
+  min_rho = ${min_rho},
+  min_goodness = ${min_goodness},
+  uninformative_BAF_threshold = ${uninformative_baf_threshold},
+  min_normal_depth = ${min_normal_depth},
+  min_base_qual = ${min_base_qual},
+  min_map_qual = ${min_map_qual},
+  calc_seg_baf_option = ${calc_seg_baf_option},
+  skip_allele_counting = ${skip_allele_counting},
+  skip_preprocessing = ${skip_preprocessing},
+  skip_phasing = ${skip_phasing},
+  usebeagle = ${use_beagle},
+  beaglejar = beagle_jar,
+  beagleref = beagle_ref_template,
+  beagleplink = beagle_plink_template,
+  beaglemaxmem = ${beagle_max_mem},
+  beaglenthreads = ${beagle_threads},
+  beaglewindow = ${beagle_window},
+  beagleoverlap = ${beagle_overlap},
+  snp6_reference_info_file = NA,
+  apt.probeset.genotype.exe = "apt-probeset-genotype",
+  apt.probeset.summarize.exe = "apt-probeset-summarize",
+  norm.geno.clust.exe = "normalize_affy_geno_cluster.pl",
+  birdseed_report_file = "birdseed.report.txt",
+  heterozygousFilter = "${heterozygous_filter}",
+  prior_breakpoints_file = NULL
+)
+
+setwd(old_wd)
+
+battenberg_version <- tryCatch(
+  as.character(packageVersion("Battenberg")),
+  error = function(err) "unknown"
+)
+
+writeLines(
+  c(
+    "\"${task.process}\":",
+    paste0("    battenberg: ", battenberg_version)
+  ),
+  "versions.yml"
+)

@@ -25,6 +25,15 @@ params.fasta_fai     = getGenomeAttribute('fasta_fai')
 params.gc_wiggle     = getGenomeAttribute('gc_wiggle')
 params.fasta_gzi     = getGenomeAttribute('fasta_gzi')
 params.bed_file      = getGenomeAttribute('bed_file')
+params.battenberg_impute_info   = params.battenberg_impute_info   ?: getGenomeAttribute('battenberg_impute_info')
+params.battenberg_g1000_loci    = params.battenberg_g1000_loci    ?: getGenomeAttribute('battenberg_g1000_loci')
+params.battenberg_problem_loci  = params.battenberg_problem_loci  ?: getGenomeAttribute('battenberg_problem_loci')
+params.battenberg_gc_correction = params.battenberg_gc_correction ?: getGenomeAttribute('battenberg_gc_correction')
+params.battenberg_rt_correction = params.battenberg_rt_correction ?: getGenomeAttribute('battenberg_rt_correction')
+params.battenberg_g1000_alleles = params.battenberg_g1000_alleles ?: getGenomeAttribute('battenberg_g1000_alleles')
+params.battenberg_beagle_jar    = params.battenberg_beagle_jar    ?: getGenomeAttribute('battenberg_beagle_jar')
+params.battenberg_beagle_ref    = params.battenberg_beagle_ref    ?: getGenomeAttribute('battenberg_beagle_ref')
+params.battenberg_beagle_plink  = params.battenberg_beagle_plink  ?: getGenomeAttribute('battenberg_beagle_plink')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,6 +105,42 @@ workflow SOTTORIVALAB_CNV {
         ? Channel.fromPath(params.fasta_gzi).map{ it -> [ [id:'gzi'], it ] }.collect()
         : PREPARE_GENOME.out.fasta_gzi // TODO make gzi if absent
 
+    battenberg_impute_info_ch = params.run_battenberg
+        ? Channel.value(file(params.battenberg_impute_info, checkIfExists: true))
+        : Channel.empty()
+
+    battenberg_g1000_loci_ch = params.run_battenberg
+        ? Channel.value(file(params.battenberg_g1000_loci, checkIfExists: true))
+        : Channel.empty()
+
+    battenberg_problem_loci_ch = params.run_battenberg
+        ? Channel.value(file(params.battenberg_problem_loci, checkIfExists: true))
+        : Channel.empty()
+
+    battenberg_gc_correction_ch = params.run_battenberg
+        ? Channel.value(file(params.battenberg_gc_correction, checkIfExists: true))
+        : Channel.empty()
+
+    battenberg_rt_correction_ch = params.run_battenberg
+        ? Channel.value(file(params.battenberg_rt_correction, checkIfExists: true))
+        : Channel.empty()
+
+    battenberg_g1000_alleles_ch = params.run_battenberg
+        ? Channel.value(file(params.battenberg_g1000_alleles, checkIfExists: true))
+        : Channel.empty()
+
+    battenberg_beagle_jar_ch = params.run_battenberg
+        ? Channel.value(file(params.battenberg_beagle_jar, checkIfExists: true))
+        : Channel.empty()
+
+    battenberg_beagle_ref_ch = params.run_battenberg
+        ? Channel.value(file(params.battenberg_beagle_ref, checkIfExists: true))
+        : Channel.empty()
+
+    battenberg_beagle_plink_ch = params.run_battenberg
+        ? Channel.value(file(params.battenberg_beagle_plink, checkIfExists: true))
+        : Channel.empty()
+
     bin_size_ch = params.bin_size
         ? Channel.value(params.bin_size)
         : Channel.value(50)
@@ -121,7 +166,16 @@ workflow SOTTORIVALAB_CNV {
         loci_files,    
         bed_file_ch,
         gc_file,
-        rt_file       
+        rt_file,
+        battenberg_impute_info_ch,
+        battenberg_g1000_loci_ch,
+        battenberg_problem_loci_ch,
+        battenberg_gc_correction_ch,
+        battenberg_rt_correction_ch,
+        battenberg_g1000_alleles_ch,
+        battenberg_beagle_jar_ch,
+        battenberg_beagle_ref_ch,
+        battenberg_beagle_plink_ch
     )
     emit:
     multiqc_report = CNV.out.multiqc_report // channel: /path/to/multiqc_report.html

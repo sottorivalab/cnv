@@ -81,6 +81,63 @@
                 }
             }
         },
+        "battenberg_options": {
+            "title": "Battenberg options",
+            "type": "object",
+            "description": "Options and reference files required to run Battenberg.",
+            "properties": {
+                "run_battenberg": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Run Battenberg on paired tumour-normal BAM inputs."
+                },
+                "battenberg_impute_info": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to Battenberg impute_info.txt."
+                },
+                "battenberg_g1000_loci": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Directory containing Battenberg 1000G loci files."
+                },
+                "battenberg_problem_loci": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to Battenberg problem loci file."
+                },
+                "battenberg_gc_correction": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Directory containing Battenberg GC correction files."
+                },
+                "battenberg_rt_correction": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Directory containing Battenberg replication timing correction files."
+                },
+                "battenberg_g1000_alleles": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Directory containing Battenberg 1000G allele index files."
+                },
+                "battenberg_beagle_jar": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to the Beagle jar used by Battenberg."
+                },
+                "battenberg_beagle_ref": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Directory containing Beagle reference VCF files."
+                },
+                "battenberg_beagle_plink": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Directory containing Beagle PLINK map files."
+                }
+            }
+        },
         "reference_genome_options": {
             "title": "Reference genome options",
             "type": "object",
@@ -309,6 +366,9 @@
         },
         {
             "$ref": "#/$defs/sequenza_options"
+        },
+        {
+            "$ref": "#/$defs/battenberg_options"
         },
         {
             "$ref": "#/$defs/reference_genome_options"
