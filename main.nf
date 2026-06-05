@@ -248,6 +248,9 @@ def battenbergPrefixGlob(prefix) {
     }
 
     def value = prefix.toString()
+    if (value.contains('CHROMNAME')) {
+        return value.replace('CHROMNAME', '*')
+    }
     return value ==~ /.*[\*\?\[\]\{\}].*/ ? value : "${value}*"
 }
 
