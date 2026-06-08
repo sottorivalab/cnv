@@ -13,6 +13,7 @@ include { TABIX_TABIX            } from '../modules/nf-core/tabix/tabix/'
 include { SEQUENZAUTILS_BIN      } from '../modules/local/sequenzautils/bin/'
 include { SEQUENZAUTILS_RSEQZ    } from '../modules/local/sequenza/rseqz/'
 include { GAWK                   } from '../modules/local/gawk/'
+include { INFERSEX               } from '../modules/local/infersex'
 include { BATTENBERG             } from '../modules/local/battenberg'
 include { ASCAT                  } from '../modules/nf-core/ascat'
 include { UNZIP                  } from '../modules/nf-core/unzip'
@@ -169,6 +170,26 @@ workflow CNV {
         TABIX_TABIX.out.concat_seqz,
         ch_purity
         )
+    INFERSEX(paired_channels.for_ascat)
+
+    paired_channels.for_ascat
+        .map { meta, bam_n, bai_n, bam_t, bai_t ->
+            tuple(meta.id, meta, bam_n, bai_n, bam_t, bai_t)
+        }
+        .join(
+            INFERSEX.out.sex.map { meta, sex_file ->
+                tuple(meta.id, sex_file)
+            }
+        )
+        .map { id, meta, bam_n, bai_n, bam_t, bai_t, sex_file ->
+            def inferred_sex = sex_file.text.trim().toLowerCase()
+            def battenberg_sex = inferred_sex == 'male' ? 'XY' : inferred_sex == 'female' ? 'XX' : meta.sex
+            def battenberg_meta = meta + [sex: battenberg_sex]
+
+            tuple(battenberg_meta, bam_n, bai_n, bam_t, bai_t)
+        }
+        .set { battenberg_input }
+
     paired_channels.for_ascat.view{ "RIGHT BEFORE ASCAT: ${it[0].id}" }
 
     ASCAT( paired_channels.for_ascat,
@@ -182,7 +203,7 @@ workflow CNV {
 
     if (params.run_battenberg) {
         BATTENBERG(
-            paired_channels.for_ascat,
+            battenberg_input,
             ch_battenberg_impute_info,
             ch_battenberg_g1000_loci,
             ch_battenberg_problem_loci,
