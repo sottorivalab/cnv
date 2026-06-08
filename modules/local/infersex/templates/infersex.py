@@ -85,12 +85,12 @@ x_depth = group_depths["chrX"]
 y_depth = group_depths["chrY"]
 sex = identify_sex(x_depth, y_depth, autosome_depth)
 
-Path(f"{PREFIX}.sex.txt").write_text(f"{sex}\n")
+Path(f"{PREFIX}.sex.txt").write_text(sex + chr(10))
 
 with Path(f"{PREFIX}.sex_depths.tsv").open("w") as handle:
-    handle.write("group\tchrom\tstart\tend\tdepth\n")
+    print("group", "chrom", "start", "end", "depth", sep=chr(9), file=handle)
     for group, chrom, start, end, depth in rows:
-        handle.write(f"{group}\t{chrom}\t{start}\t{end}\t{depth:.6f}\n")
+        print(group, chrom, start, end, f"{depth:.6f}", sep=chr(9), file=handle)
 
 print(f"autosome median: {autosome_depth:.6f}")
 print(f"chrX/autosome: {x_depth / autosome_depth if autosome_depth else 'NA'}")
@@ -98,5 +98,5 @@ print(f"chrY/autosome: {y_depth / autosome_depth if autosome_depth else 'NA'}")
 print(f"inferred sex: {sex}")
 
 with Path("versions.yml").open("w") as handle:
-    handle.write('"${task.process}":\n')
-    handle.write(f"    pysam: {pysam.__version__}\n")
+    print('"${task.process}":', file=handle)
+    print(f"    pysam: {pysam.__version__}", file=handle)
